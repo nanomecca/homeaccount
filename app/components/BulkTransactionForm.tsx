@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { TransactionFormData } from '@/types/transaction';
 import { TransactionType } from '@/types/transaction';
-import { addTransactions, getCategories } from '@/lib/db';
+import { addTransactions, getCategories } from '@/lib/db-client';
 import { Category } from '@/types/category';
 
 interface BulkRow {

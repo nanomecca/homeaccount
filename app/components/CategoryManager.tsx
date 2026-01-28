@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Category, CategoryFormData } from '@/types/category';
-import { getCategories, addCategory, deleteCategory } from '@/lib/db';
+import { getCategories, addCategory, deleteCategory } from '@/lib/db-client';
 import { TransactionType } from '@/types/transaction';
 
 export default function CategoryManager({ onCategoryChange }: { onCategoryChange: () => void }) {

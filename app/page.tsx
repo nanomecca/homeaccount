@@ -6,7 +6,7 @@ import BulkTransactionForm from './components/BulkTransactionForm';
 import CategoryManager from './components/CategoryManager';
 import TransactionList from './components/TransactionList';
 import DateFilter from './components/DateFilter';
-import { getTransactions, getTransactionsByDateRange } from '@/lib/db';
+import { getTransactions, getTransactionsByDateRange } from '@/lib/db-client';
 import { Transaction } from '@/types/transaction';
 
 export default function Home() {

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { TransactionType, TransactionFormData } from '@/types/transaction';
-import { addTransaction, getCategories } from '@/lib/db';
+import { addTransaction, getCategories } from '@/lib/db-client';
 import { Category } from '@/types/category';
 
 export default function TransactionForm({ onSuccess }: { onSuccess: () => void }) {

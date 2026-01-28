@@ -1,7 +1,7 @@
 'use client';
 
 import { Transaction } from '@/types/transaction';
-import { deleteTransaction } from '@/lib/db';
+import { deleteTransaction } from '@/lib/db-client';
 
 interface TransactionListProps {
   transactions: Transaction[];
