@@ -167,3 +167,45 @@ export async function deleteTransactionType(id: string) {
 
   if (error) throw error;
 }
+
+// 사용자 인증 관련 함수
+export async function loginUser(username: string, password: string) {
+  const { data, error } = await supabase
+    .from('users')
+    .select('id, username')
+    .eq('username', username)
+    .eq('password', password)
+    .single();
+
+  if (error) {
+    if (error.code === 'PGRST116') {
+      // 사용자를 찾을 수 없음
+      return null;
+    }
+    throw error;
+  }
+  return data;
+}
+
+export async function changePassword(username: string, currentPassword: string, newPassword: string) {
+  // 현재 비밀번호 확인
+  const { data: user, error: checkError } = await supabase
+    .from('users')
+    .select('id')
+    .eq('username', username)
+    .eq('password', currentPassword)
+    .single();
+
+  if (checkError || !user) {
+    return { success: false, message: '현재 비밀번호가 올바르지 않습니다.' };
+  }
+
+  // 비밀번호 업데이트
+  const { error: updateError } = await supabase
+    .from('users')
+    .update({ password: newPassword, updated_at: new Date().toISOString() })
+    .eq('id', user.id);
+
+  if (updateError) throw updateError;
+  return { success: true, message: '비밀번호가 변경되었습니다.' };
+}

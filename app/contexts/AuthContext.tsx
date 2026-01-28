@@ -7,32 +7,20 @@ interface AuthContextType {
   username: string | null;
   login: (username: string, password: string) => Promise<boolean>;
   logout: () => void;
-  changePassword: (currentPassword: string, newPassword: string) => Promise<boolean>;
+  changePassword: (currentPassword: string, newPassword: string) => Promise<{ success: boolean; message: string }>;
   isLoading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// 기본 사용자 정보 (실제로는 DB에서 관리)
-const DEFAULT_USER = {
-  username: 'nano',
-  password: 'password',
-};
-
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [username, setUsername] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [storedPassword, setStoredPassword] = useState(DEFAULT_USER.password);
 
   useEffect(() => {
     // 페이지 로드 시 localStorage에서 인증 상태 확인
     const savedAuth = localStorage.getItem('auth');
-    const savedPassword = localStorage.getItem('userPassword');
-    
-    if (savedPassword) {
-      setStoredPassword(savedPassword);
-    }
     
     if (savedAuth) {
       const authData = JSON.parse(savedAuth);
@@ -43,16 +31,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = async (inputUsername: string, inputPassword: string): Promise<boolean> => {
-    // 저장된 비밀번호 확인 (localStorage에서 변경된 비밀번호가 있으면 사용)
-    const currentPassword = localStorage.getItem('userPassword') || DEFAULT_USER.password;
-    
-    if (inputUsername === DEFAULT_USER.username && inputPassword === currentPassword) {
-      setIsAuthenticated(true);
-      setUsername(inputUsername);
-      localStorage.setItem('auth', JSON.stringify({ username: inputUsername }));
-      return true;
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: inputUsername, password: inputPassword }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setIsAuthenticated(true);
+        setUsername(data.user.username);
+        localStorage.setItem('auth', JSON.stringify({ username: data.user.username }));
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('로그인 오류:', error);
+      return false;
     }
-    return false;
   };
 
   const logout = () => {
@@ -61,15 +59,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem('auth');
   };
 
-  const changePassword = async (currentPassword: string, newPassword: string): Promise<boolean> => {
-    const savedPassword = localStorage.getItem('userPassword') || DEFAULT_USER.password;
-    
-    if (currentPassword === savedPassword) {
-      localStorage.setItem('userPassword', newPassword);
-      setStoredPassword(newPassword);
-      return true;
+  const changePassword = async (currentPassword: string, newPassword: string): Promise<{ success: boolean; message: string }> => {
+    try {
+      const response = await fetch('/api/auth/change-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, currentPassword, newPassword }),
+      });
+
+      const data = await response.json();
+      return { success: data.success, message: data.message };
+    } catch (error) {
+      console.error('비밀번호 변경 오류:', error);
+      return { success: false, message: '비밀번호 변경 중 오류가 발생했습니다.' };
     }
-    return false;
   };
 
   return (

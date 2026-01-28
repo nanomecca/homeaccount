@@ -34,13 +34,13 @@ export default function ChangePasswordModal({ onClose }: ChangePasswordModalProp
 
     try {
       const result = await changePassword(currentPassword, newPassword);
-      if (result) {
+      if (result.success) {
         setSuccess(true);
         setTimeout(() => {
           onClose();
         }, 1500);
       } else {
-        setError('현재 비밀번호가 올바르지 않습니다.');
+        setError(result.message);
       }
     } catch (err) {
       setError('비밀번호 변경 중 오류가 발생했습니다.');
