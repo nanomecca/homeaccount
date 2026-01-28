@@ -93,48 +93,42 @@ export default function TransactionList({ transactions, onDelete }: TransactionL
     }
 
     try {
-      // 동적 import로 xlsx 로드
-      const XLSX = await import('xlsx');
-
-      // 엑셀 데이터 준비
-      const excelData = transactions.map((t) => {
-        const date = new Date(t.date);
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const day = String(date.getDate()).padStart(2, '0');
-        
-        return {
-          '날짜': `${year}-${month}-${day}`,
-          '유형': getTypeDisplay(t.type),
-          '카테고리': t.category,
-          '금액': Number(t.amount),
-          '설명': t.description || '',
-        };
-      });
-
-      // 워크북 생성
-      const ws = XLSX.utils.json_to_sheet(excelData);
-      
-      // 컬럼 너비 자동 조정
-      const colWidths = [
-        { wch: 12 }, // 날짜
-        { wch: 10 }, // 유형
-        { wch: 15 }, // 카테고리
-        { wch: 15 }, // 금액
-        { wch: 30 }, // 설명
-      ];
-      ws['!cols'] = colWidths;
-      
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, '거래내역');
-
       // 파일명 생성 (날짜 범위 포함)
       const today = new Date();
       const dateStr = today.toISOString().split('T')[0].replace(/-/g, '');
       const fileName = `거래내역_${dateStr}.xlsx`;
 
-      // 파일 다운로드
-      XLSX.writeFile(wb, fileName);
+      // 유형 표시 이름 변환
+      const dataWithDisplayNames = transactions.map((t) => ({
+        ...t,
+        type: getTypeDisplay(t.type),
+      }));
+
+      const response = await fetch('/api/export-excel', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          transactions: dataWithDisplayNames,
+          fileName,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('엑셀 생성 실패');
+      }
+
+      // Blob으로 변환 후 다운로드
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
     } catch (error) {
       console.error('엑셀 다운로드 실패:', error);
       alert('엑셀 다운로드에 실패했습니다.');
