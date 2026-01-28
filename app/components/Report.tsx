@@ -4,7 +4,9 @@ import { useState, useEffect } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 import { Transaction } from '@/types/transaction';
 import { Category } from '@/types/category';
-import { getTransactions, getCategories } from '@/lib/db-client';
+import { TransactionType } from '@/types/transaction-type';
+import { getTransactions, getCategories, getTransactionTypes } from '@/lib/db-client';
+import * as XLSX from 'xlsx';
 
 export default function Report() {
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
@@ -14,6 +16,7 @@ export default function Report() {
   const [endDate, setEndDate] = useState('');
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [types, setTypes] = useState<TransactionType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [reportType, setReportType] = useState<'monthly' | 'category'>('monthly');
 
@@ -30,12 +33,14 @@ export default function Report() {
   const loadData = async () => {
     setIsLoading(true);
     try {
-      const [transactionsData, categoriesData] = await Promise.all([
+      const [transactionsData, categoriesData, typesData] = await Promise.all([
         getTransactions(),
         getCategories(),
+        getTransactionTypes(),
       ]);
       setTransactions(transactionsData);
       setCategories(categoriesData);
+      setTypes(typesData);
     } catch (error) {
       console.error('데이터 로드 실패:', error);
       alert('데이터를 불러오는데 실패했습니다.');
@@ -177,6 +182,60 @@ export default function Report() {
 
   const allCategories = categories.map((cat) => cat.name);
 
+  // 유형 표시 이름 가져오기
+  const getTypeDisplayName = (typeName: string) => {
+    const type = types.find(t => t.name === typeName);
+    return type ? type.display_name : typeName;
+  };
+
+  // 엑셀 다운로드 함수
+  const exportToExcel = () => {
+    const monthlyTransactions = monthlyData.transactions;
+    
+    if (monthlyTransactions.length === 0) {
+      alert('다운로드할 거래 내역이 없습니다.');
+      return;
+    }
+
+    // 엑셀 데이터 준비
+    const excelData = monthlyTransactions.map((t) => {
+      const date = new Date(t.date);
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      
+      return {
+        '날짜': `${year}-${month}-${day}`,
+        '유형': getTypeDisplayName(t.type),
+        '카테고리': t.category,
+        '금액': Number(t.amount),
+        '설명': t.description || '',
+      };
+    });
+
+    // 워크북 생성
+    const ws = XLSX.utils.json_to_sheet(excelData);
+    
+    // 컬럼 너비 자동 조정
+    const colWidths = [
+      { wch: 12 }, // 날짜
+      { wch: 10 }, // 유형
+      { wch: 15 }, // 카테고리
+      { wch: 15 }, // 금액
+      { wch: 30 }, // 설명
+    ];
+    ws['!cols'] = colWidths;
+    
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, '거래내역');
+
+    // 한글 인코딩을 위한 파일명
+    const fileName = `${selectedYear}년_${selectedMonth}월_거래내역.xlsx`;
+
+    // 파일 다운로드
+    XLSX.writeFile(wb, fileName);
+  };
+
   return (
     <div className="space-y-6">
       {/* 리포트 타입 선택 */}
@@ -212,32 +271,42 @@ export default function Report() {
           
           <div className="flex gap-4 items-center mb-6">
             <div>
-              <label className="block text-sm font-medium mb-1 text-gray-700">년도</label>
+              <label className="block text-sm font-medium mb-1 text-black">년도</label>
               <select
                 value={selectedYear}
                 onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-                className="p-2 border border-gray-300 rounded-md text-gray-900 bg-white"
+                className="p-2 border border-gray-300 rounded-md text-black bg-white"
               >
                 {years.map((year) => (
-                  <option key={year} value={year} className="text-gray-900">
+                  <option key={year} value={year} className="text-black">
                     {year}년
                   </option>
                 ))}
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1 text-gray-700">월</label>
+              <label className="block text-sm font-medium mb-1 text-black">월</label>
               <select
                 value={selectedMonth}
                 onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
-                className="p-2 border border-gray-300 rounded-md text-gray-900 bg-white"
+                className="p-2 border border-gray-300 rounded-md text-black bg-white"
               >
                 {months.map((month) => (
-                  <option key={month} value={month} className="text-gray-900">
+                  <option key={month} value={month} className="text-black">
                     {month}월
                   </option>
                 ))}
               </select>
+            </div>
+            <div className="flex-1"></div>
+            <div>
+              <button
+                onClick={exportToExcel}
+                disabled={monthlyData.transactions.length === 0}
+                className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed text-black"
+              >
+                엑셀 다운로드
+              </button>
             </div>
           </div>
 
@@ -314,7 +383,7 @@ export default function Report() {
                   </div>
                 </div>
               ) : (
-                <p className="text-center py-8 text-gray-500">
+                <p className="text-center py-8 text-black">
                   {selectedYear}년 {selectedMonth}월에 지출 내역이 없습니다.
                 </p>
               )}
