@@ -14,6 +14,7 @@ export default function TransactionForm({ onSuccess }: { onSuccess: () => void }
     description: '',
     date: new Date().toISOString().split('T')[0],
   });
+  const [selectedMainCategory, setSelectedMainCategory] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
   const [types, setTypes] = useState<TransactionType[]>([]);
@@ -39,8 +40,21 @@ export default function TransactionForm({ onSuccess }: { onSuccess: () => void }
     }
   };
 
-  const getCategoriesByType = (type: string) => {
-    return categories.filter((cat) => cat.type === type);
+  // 현재 유형의 대분류 목록 가져오기
+  const getMainCategories = (type: string) => {
+    const mainCats = [...new Set(
+      categories
+        .filter(cat => cat.type === type)
+        .map(cat => cat.main_category)
+    )];
+    return mainCats.sort();
+  };
+
+  // 선택된 대분류의 소분류 목록 가져오기
+  const getSubCategories = (type: string, mainCategory: string) => {
+    return categories.filter(
+      cat => cat.type === type && cat.main_category === mainCategory
+    );
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -56,6 +70,7 @@ export default function TransactionForm({ onSuccess }: { onSuccess: () => void }
         description: '',
         date: new Date().toISOString().split('T')[0],
       });
+      setSelectedMainCategory('');
       onSuccess();
     } catch (error) {
       console.error('거래 추가 실패:', error);
@@ -65,7 +80,8 @@ export default function TransactionForm({ onSuccess }: { onSuccess: () => void }
     }
   };
 
-  const currentCategories = getCategoriesByType(formData.type);
+  const mainCategories = getMainCategories(formData.type);
+  const subCategories = getSubCategories(formData.type, selectedMainCategory);
 
   return (
     <form onSubmit={handleSubmit} className="bg-white p-6 rounded-lg shadow-md mb-6">
@@ -78,6 +94,7 @@ export default function TransactionForm({ onSuccess }: { onSuccess: () => void }
             value={formData.type}
             onChange={(e) => {
               setFormData({ ...formData, type: e.target.value, category: '' });
+              setSelectedMainCategory('');
             }}
             className="w-full p-2 border border-gray-300 rounded-md text-gray-900 bg-white"
             required
@@ -106,15 +123,38 @@ export default function TransactionForm({ onSuccess }: { onSuccess: () => void }
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-2 text-gray-700">카테고리</label>
+          <label className="block text-sm font-medium mb-2 text-gray-700">대분류</label>
+          <select
+            value={selectedMainCategory}
+            onChange={(e) => {
+              setSelectedMainCategory(e.target.value);
+              setFormData({ ...formData, category: '' });
+            }}
+            className="w-full p-2 border border-gray-300 rounded-md text-gray-900 bg-white"
+            required
+          >
+            <option value="" className="text-gray-500">선택하세요</option>
+            {mainCategories.map((mainCat) => (
+              <option key={mainCat} value={mainCat} className="text-gray-900">
+                {mainCat}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-2 text-gray-700">소분류</label>
           <select
             value={formData.category}
             onChange={(e) => setFormData({ ...formData, category: e.target.value })}
             className="w-full p-2 border border-gray-300 rounded-md text-gray-900 bg-white"
             required
+            disabled={!selectedMainCategory}
           >
-            <option value="" className="text-gray-500">선택하세요</option>
-            {currentCategories.map((cat) => (
+            <option value="" className="text-gray-500">
+              {selectedMainCategory ? '선택하세요' : '대분류를 먼저 선택하세요'}
+            </option>
+            {subCategories.map((cat) => (
               <option key={cat.id} value={cat.name} className="text-gray-900">
                 {cat.name}
               </option>
@@ -133,7 +173,7 @@ export default function TransactionForm({ onSuccess }: { onSuccess: () => void }
           />
         </div>
 
-        <div className="md:col-span-2">
+        <div>
           <label className="block text-sm font-medium mb-2 text-gray-700">설명 (선택사항)</label>
           <input
             type="text"

@@ -114,6 +114,14 @@ export async function deleteCategory(id: string): Promise<void> {
   return supabaseDb.deleteCategory(id);
 }
 
+export async function getMainCategories(type?: string): Promise<string[]> {
+  if (USE_LOCAL_POSTGRES) {
+    const url = type ? `/categories?type=${encodeURIComponent(type)}&mainOnly=true` : '/categories?mainOnly=true';
+    return apiRequest<string[]>(url);
+  }
+  return supabaseDb.getMainCategories(type);
+}
+
 // Transaction Types
 export async function getTransactionTypes(): Promise<TransactionType[]> {
   if (USE_LOCAL_POSTGRES) {

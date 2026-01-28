@@ -74,6 +74,7 @@ export async function getCategories(type?: string) {
   let query = supabase
     .from('categories')
     .select('*')
+    .order('main_category', { ascending: true })
     .order('name', { ascending: true });
 
   if (type) {
@@ -83,6 +84,25 @@ export async function getCategories(type?: string) {
   const { data, error } = await query;
   if (error) throw error;
   return data as Category[];
+}
+
+// 대분류 목록 가져오기
+export async function getMainCategories(type?: string) {
+  let query = supabase
+    .from('categories')
+    .select('main_category, type')
+    .order('main_category', { ascending: true });
+
+  if (type) {
+    query = query.eq('type', type);
+  }
+
+  const { data, error } = await query;
+  if (error) throw error;
+  
+  // 중복 제거
+  const uniqueMainCategories = [...new Set(data?.map(d => d.main_category) || [])];
+  return uniqueMainCategories;
 }
 
 export async function addCategory(category: CategoryFormData) {

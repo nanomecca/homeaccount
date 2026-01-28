@@ -9,6 +9,7 @@ import { TransactionType } from '@/types/transaction-type';
 interface BulkRow {
   id: string;
   type: string;
+  mainCategory: string;
   amount: string;
   category: string;
   description: string;
@@ -32,6 +33,7 @@ export default function BulkTransactionForm({ onSuccess }: { onSuccess: () => vo
         {
           id: '1',
           type: types[0].name,
+          mainCategory: '',
           amount: '',
           category: '',
           description: '',
@@ -60,6 +62,7 @@ export default function BulkTransactionForm({ onSuccess }: { onSuccess: () => vo
       {
         id: Date.now().toString(),
         type: types.length > 0 ? types[0].name : '',
+        mainCategory: '',
         amount: '',
         category: '',
         description: '',
@@ -128,7 +131,8 @@ export default function BulkTransactionForm({ onSuccess }: { onSuccess: () => vo
       setRows([
         {
           id: '1',
-          type: 'expense',
+          type: types.length > 0 ? types[0].name : 'expense',
+          mainCategory: '',
           amount: '',
           category: '',
           description: '',
@@ -144,8 +148,21 @@ export default function BulkTransactionForm({ onSuccess }: { onSuccess: () => vo
     }
   };
 
-  const getCategoriesByType = (type: string) => {
-    return categories.filter((cat) => cat.type === type);
+  // 현재 유형의 대분류 목록 가져오기
+  const getMainCategories = (type: string) => {
+    const mainCats = [...new Set(
+      categories
+        .filter(cat => cat.type === type)
+        .map(cat => cat.main_category)
+    )];
+    return mainCats.sort();
+  };
+
+  // 선택된 대분류의 소분류 목록 가져오기
+  const getSubCategories = (type: string, mainCategory: string) => {
+    return categories.filter(
+      cat => cat.type === type && cat.main_category === mainCategory
+    );
   };
 
   return (
@@ -166,23 +183,25 @@ export default function BulkTransactionForm({ onSuccess }: { onSuccess: () => vo
           <thead>
             <tr className="bg-gray-100">
               <th className="border p-2 text-left text-sm font-medium text-black">유형</th>
-              <th className="border p-2 text-left text-sm font-medium text-black">카테고리</th>
+              <th className="border p-2 text-left text-sm font-medium text-black">대분류</th>
+              <th className="border p-2 text-left text-sm font-medium text-black">소분류</th>
               <th className="border p-2 text-left text-sm font-medium text-black">금액</th>
               <th className="border p-2 text-left text-sm font-medium text-black">설명</th>
               <th className="border p-2 text-left text-sm font-medium text-black">날짜</th>
-              <th className="border p-2 text-center text-sm font-medium w-16 text-black">삭제</th>
+              <th className="border p-2 text-center text-sm font-medium w-12 text-black">삭제</th>
             </tr>
           </thead>
           <tbody>
             {rows.map((row) => {
-              const availableCategories = getCategoriesByType(row.type);
+              const mainCategories = getMainCategories(row.type);
+              const subCategories = getSubCategories(row.type, row.mainCategory);
               return (
                 <tr key={row.id} className="hover:bg-gray-50">
                   <td className="border p-1">
                     <select
                       value={row.type}
                       onChange={(e) => {
-                        updateRowMultiple(row.id, { type: e.target.value, category: '' });
+                        updateRowMultiple(row.id, { type: e.target.value, mainCategory: '', category: '' });
                       }}
                       className="w-full p-1 text-sm border border-gray-300 rounded text-gray-900 bg-white"
                       required
@@ -197,13 +216,31 @@ export default function BulkTransactionForm({ onSuccess }: { onSuccess: () => vo
                   </td>
                   <td className="border p-1">
                     <select
-                      value={row.category}
-                      onChange={(e) => updateRow(row.id, 'category', e.target.value)}
+                      value={row.mainCategory}
+                      onChange={(e) => {
+                        updateRowMultiple(row.id, { mainCategory: e.target.value, category: '' });
+                      }}
                       className="w-full p-1 text-sm border border-gray-300 rounded text-gray-900 bg-white"
                       required
                     >
                       <option value="" className="text-gray-500">선택</option>
-                      {availableCategories.map((cat) => (
+                      {mainCategories.map((mainCat) => (
+                        <option key={mainCat} value={mainCat} className="text-gray-900">
+                          {mainCat}
+                        </option>
+                      ))}
+                    </select>
+                  </td>
+                  <td className="border p-1">
+                    <select
+                      value={row.category}
+                      onChange={(e) => updateRow(row.id, 'category', e.target.value)}
+                      className="w-full p-1 text-sm border border-gray-300 rounded text-gray-900 bg-white"
+                      required
+                      disabled={!row.mainCategory}
+                    >
+                      <option value="" className="text-gray-500">선택</option>
+                      {subCategories.map((cat) => (
                         <option key={cat.id} value={cat.name} className="text-gray-900">
                           {cat.name}
                         </option>
@@ -228,7 +265,7 @@ export default function BulkTransactionForm({ onSuccess }: { onSuccess: () => vo
                       value={row.description}
                       onChange={(e) => updateRow(row.id, 'description', e.target.value)}
                       className="w-full p-1 text-sm border border-gray-300 rounded text-gray-900 bg-white placeholder:text-gray-400"
-                      placeholder="설명 (선택)"
+                      placeholder="설명"
                     />
                   </td>
                   <td className="border p-1">
