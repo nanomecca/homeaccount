@@ -131,20 +131,3 @@ export default function Home() {
     </main>
   );
 }
-          startDate={startDate}
-          endDate={endDate}
-          onStartDateChange={setStartDate}
-          onEndDateChange={setEndDate}
-        />
-
-        {isLoading ? (
-          <div className="bg-white rounded-lg shadow-md p-8 text-center">
-            <p className="text-gray-600">로딩 중...</p>
-          </div>
-        ) : (
-          <TransactionList transactions={transactions} onDelete={loadTransactions} />
-        )}
-      </div>
-    </main>
-  );
-}
