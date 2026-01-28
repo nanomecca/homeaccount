@@ -143,7 +143,7 @@ export async function updateMainCategory(
   type: string,
   oldMainCategory: string,
   newMainCategory: string
-) {
+): Promise<void> {
   // categories 테이블의 main_category 업데이트
   const { error: categoryError } = await supabase
     .from('categories')
@@ -161,15 +161,13 @@ export async function updateMainCategory(
     .eq('main_category', oldMainCategory);
 
   if (transactionError) throw transactionError;
-
-  return { success: true };
 }
 
 // 소분류 이름 변경 (해당 카테고리와 거래 업데이트)
 export async function updateSubCategory(
   id: string,
   newName: string
-) {
+): Promise<void> {
   // 카테고리 정보 가져오기
   const { data: category, error: fetchError } = await supabase
     .from('categories')
@@ -199,8 +197,6 @@ export async function updateSubCategory(
     .eq('category', oldName);
 
   if (transactionError) throw transactionError;
-
-  return { success: true };
 }
 
 // 유형 관련 함수
