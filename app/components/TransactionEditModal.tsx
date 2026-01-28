@@ -18,6 +18,7 @@ export default function TransactionEditModal({ transaction, onClose, onSuccess }
     type: transaction.type,
     amount: Number(transaction.amount),
     category: transaction.category,
+    main_category: transaction.main_category,
     description: transaction.description || '',
     date: transaction.date,
   });
@@ -37,11 +38,13 @@ export default function TransactionEditModal({ transaction, onClose, onSuccess }
       const currentCategory = categories.find(
         cat => cat.type === transaction.type && cat.name === transaction.category
       );
-      if (currentCategory) {
-        setSelectedMainCategory(currentCategory.main_category);
+      const mainCategory = transaction.main_category || currentCategory?.main_category || '';
+      if (mainCategory) {
+        setSelectedMainCategory(mainCategory);
+        setFormData(prev => ({ ...prev, main_category: mainCategory }));
       }
     }
-  }, [categories, transaction.type, transaction.category, selectedMainCategory]);
+  }, [categories, transaction.type, transaction.category, transaction.main_category, selectedMainCategory]);
 
   const loadData = async () => {
     try {
@@ -85,7 +88,16 @@ export default function TransactionEditModal({ transaction, onClose, onSuccess }
         return;
       }
 
-      await updateTransaction(transaction.id, formData);
+      // 선택된 소분류의 대분류 찾기
+      const selectedCategory = categories.find(
+        c => c.type === formData.type && c.name === formData.category
+      );
+      const mainCategory = selectedCategory?.main_category || selectedMainCategory || formData.main_category;
+
+      await updateTransaction(transaction.id, {
+        ...formData,
+        main_category: mainCategory,
+      });
       onSuccess();
       onClose();
     } catch (error: any) {

@@ -124,13 +124,22 @@ export default function BulkTransactionForm({ onSuccess }: { onSuccess: () => vo
         return;
       }
 
-      const transactions: TransactionFormData[] = validRows.map((row) => ({
-        type: row.type,
-        amount: parseAmountInput(row.amount),
-        category: row.category,
-        description: row.description || undefined,
-        date: row.date,
-      }));
+      const transactions: TransactionFormData[] = validRows.map((row) => {
+        // 선택된 소분류의 대분류 찾기
+        const selectedCategory = categories.find(
+          c => c.type === row.type && c.name === row.category
+        );
+        const mainCategory = selectedCategory?.main_category || row.mainCategory;
+
+        return {
+          type: row.type,
+          amount: parseAmountInput(row.amount),
+          category: row.category,
+          main_category: mainCategory,
+          description: row.description || undefined,
+          date: row.date,
+        };
+      });
 
       await addTransactions(transactions);
       // 'expense' (지출)를 기본값으로 설정, 없으면 첫 번째 유형 사용

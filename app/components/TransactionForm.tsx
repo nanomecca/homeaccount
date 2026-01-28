@@ -65,7 +65,16 @@ export default function TransactionForm({ onSuccess }: { onSuccess: () => void }
     setIsSubmitting(true);
 
     try {
-      await addTransaction(formData);
+      // 선택된 소분류의 대분류 찾기
+      const selectedCategory = categories.find(
+        c => c.type === formData.type && c.name === formData.category
+      );
+      const mainCategory = selectedCategory?.main_category || selectedMainCategory;
+
+      await addTransaction({
+        ...formData,
+        main_category: mainCategory,
+      });
       // 'expense' (지출)를 기본값으로 설정, 없으면 첫 번째 유형 사용
       const defaultType = types.find(t => t.name === 'expense') || (types.length > 0 ? types[0] : null);
       setFormData({

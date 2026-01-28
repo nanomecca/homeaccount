@@ -5,6 +5,7 @@ export interface Transaction {
   type: TransactionType;
   amount: number;
   category: string;
+  main_category?: string;
   description?: string;
   date: string;
   created_at?: string;
@@ -14,6 +15,7 @@ export interface TransactionFormData {
   type: TransactionType;
   amount: number;
   category: string;
+  main_category?: string;
   description?: string;
   date: string;
 }

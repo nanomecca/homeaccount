@@ -42,10 +42,10 @@ export async function addTransaction(transaction: TransactionFormData): Promise<
   const client = await getPool().connect();
   try {
     const result = await client.query(
-      `INSERT INTO transactions (type, amount, category, description, date)
-       VALUES ($1, $2, $3, $4, $5)
+      `INSERT INTO transactions (type, amount, category, main_category, description, date)
+       VALUES ($1, $2, $3, $4, $5, $6)
        RETURNING *`,
-      [transaction.type, transaction.amount, transaction.category, transaction.description || null, transaction.date]
+      [transaction.type, transaction.amount, transaction.category, transaction.main_category || null, transaction.description || null, transaction.date]
     );
     return {
       ...result.rows[0],
@@ -62,10 +62,10 @@ export async function addTransactions(transactions: TransactionFormData[]): Prom
     const results: Transaction[] = [];
     for (const transaction of transactions) {
       const result = await client.query(
-        `INSERT INTO transactions (type, amount, category, description, date)
-         VALUES ($1, $2, $3, $4, $5)
+        `INSERT INTO transactions (type, amount, category, main_category, description, date)
+         VALUES ($1, $2, $3, $4, $5, $6)
          RETURNING *`,
-        [transaction.type, transaction.amount, transaction.category, transaction.description || null, transaction.date]
+        [transaction.type, transaction.amount, transaction.category, transaction.main_category || null, transaction.description || null, transaction.date]
       );
       results.push({
         ...result.rows[0],
@@ -83,10 +83,10 @@ export async function updateTransaction(id: string, transaction: TransactionForm
   try {
     const result = await client.query(
       `UPDATE transactions 
-       SET type = $1, amount = $2, category = $3, description = $4, date = $5
-       WHERE id = $6
+       SET type = $1, amount = $2, category = $3, main_category = $4, description = $5, date = $6
+       WHERE id = $7
        RETURNING *`,
-      [transaction.type, transaction.amount, transaction.category, transaction.description || null, transaction.date, id]
+      [transaction.type, transaction.amount, transaction.category, transaction.main_category || null, transaction.description || null, transaction.date, id]
     );
     return {
       ...result.rows[0],
