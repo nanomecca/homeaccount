@@ -169,12 +169,13 @@ export async function deleteTransactionType(id: string) {
 }
 
 // 사용자 인증 관련 함수
+import bcrypt from 'bcryptjs';
+
 export async function loginUser(username: string, password: string) {
   const { data, error } = await supabase
     .from('users')
-    .select('id, username')
+    .select('id, username, password')
     .eq('username', username)
-    .eq('password', password)
     .single();
 
   if (error) {
@@ -184,28 +185,48 @@ export async function loginUser(username: string, password: string) {
     }
     throw error;
   }
-  return data;
+
+  // 비밀번호 검증 (해시 비교)
+  const isValidPassword = await bcrypt.compare(password, data.password);
+  if (!isValidPassword) {
+    return null;
+  }
+
+  return { id: data.id, username: data.username };
 }
 
 export async function changePassword(username: string, currentPassword: string, newPassword: string) {
-  // 현재 비밀번호 확인
+  // 사용자 정보 가져오기
   const { data: user, error: checkError } = await supabase
     .from('users')
-    .select('id')
+    .select('id, password')
     .eq('username', username)
-    .eq('password', currentPassword)
     .single();
 
   if (checkError || !user) {
+    return { success: false, message: '사용자를 찾을 수 없습니다.' };
+  }
+
+  // 현재 비밀번호 확인
+  const isValidPassword = await bcrypt.compare(currentPassword, user.password);
+  if (!isValidPassword) {
     return { success: false, message: '현재 비밀번호가 올바르지 않습니다.' };
   }
+
+  // 새 비밀번호 해시화
+  const hashedPassword = await bcrypt.hash(newPassword, 10);
 
   // 비밀번호 업데이트
   const { error: updateError } = await supabase
     .from('users')
-    .update({ password: newPassword, updated_at: new Date().toISOString() })
+    .update({ password: hashedPassword, updated_at: new Date().toISOString() })
     .eq('id', user.id);
 
   if (updateError) throw updateError;
   return { success: true, message: '비밀번호가 변경되었습니다.' };
+}
+
+// 비밀번호 해시화 함수 (초기 사용자 생성용)
+export async function hashPassword(password: string): Promise<string> {
+  return bcrypt.hash(password, 10);
 }
