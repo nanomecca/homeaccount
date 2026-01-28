@@ -3,8 +3,7 @@
 import { useState, useEffect } from 'react';
 import TransactionForm from './components/TransactionForm';
 import BulkTransactionForm from './components/BulkTransactionForm';
-import CategoryManager from './components/CategoryManager';
-import TypeManager from './components/TypeManager';
+import TypeCategoryManager from './components/TypeCategoryManager';
 import TransactionList from './components/TransactionList';
 import DateFilter from './components/DateFilter';
 import Report from './components/Report';
@@ -16,7 +15,7 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(true);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
-  const [activeTab, setActiveTab] = useState<'single' | 'bulk' | 'category' | 'type' | 'report'>('single');
+  const [activeTab, setActiveTab] = useState<'single' | 'bulk' | 'manage' | 'report'>('single');
 
   const loadTransactions = async () => {
     setIsLoading(true);
@@ -75,24 +74,14 @@ export default function Home() {
               일괄 입력
             </button>
             <button
-              onClick={() => setActiveTab('category')}
+              onClick={() => setActiveTab('manage')}
               className={`py-2 px-4 border-b-2 font-medium text-sm ${
-                activeTab === 'category'
+                activeTab === 'manage'
                   ? 'border-blue-600 text-blue-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700'
               }`}
             >
-              카테고리 관리
-            </button>
-            <button
-              onClick={() => setActiveTab('type')}
-              className={`py-2 px-4 border-b-2 font-medium text-sm ${
-                activeTab === 'type'
-                  ? 'border-blue-600 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              유형 관리
+              관리
             </button>
             <button
               onClick={() => setActiveTab('report')}
@@ -114,17 +103,14 @@ export default function Home() {
         {activeTab === 'bulk' && (
           <BulkTransactionForm onSuccess={loadTransactions} />
         )}
-        {activeTab === 'category' && (
-          <CategoryManager onCategoryChange={handleCategoryChange} />
-        )}
-        {activeTab === 'type' && (
-          <TypeManager onTypeChange={handleCategoryChange} />
+        {activeTab === 'manage' && (
+          <TypeCategoryManager onChange={handleCategoryChange} />
         )}
         {activeTab === 'report' && (
           <Report />
         )}
         
-        {activeTab !== 'report' && (
+        {activeTab !== 'report' && activeTab !== 'manage' && (
           <>
             <DateFilter
               startDate={startDate}

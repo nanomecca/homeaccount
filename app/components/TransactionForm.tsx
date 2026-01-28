@@ -69,7 +69,7 @@ export default function TransactionForm({ onSuccess }: { onSuccess: () => void }
 
   return (
     <form onSubmit={handleSubmit} className="bg-white p-6 rounded-lg shadow-md mb-6">
-      <h2 className="text-xl font-bold mb-4">거래 추가</h2>
+      <h2 className="text-xl font-bold mb-4 text-black">거래 추가</h2>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>

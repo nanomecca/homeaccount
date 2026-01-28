@@ -208,7 +208,7 @@ export default function Report() {
       {reportType === 'monthly' ? (
         /* 월간 리포트 */
         <div className="bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-2xl font-bold mb-6">월간 리포트</h2>
+                <h2 className="text-2xl font-bold mb-6 text-black">월간 리포트</h2>
           
           <div className="flex gap-4 items-center mb-6">
             <div>
@@ -242,14 +242,14 @@ export default function Report() {
           </div>
 
           {isLoading ? (
-            <p className="text-center py-8 text-gray-600">로딩 중...</p>
+            <p className="text-center py-8 text-black">로딩 중...</p>
           ) : (
             <>
               {/* 요약 통계 */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                 {monthlyData.totalIncome > 0 && (
                   <div className="bg-green-50 p-4 rounded-lg">
-                    <p className="text-sm text-gray-600 mb-1">총 수입</p>
+                    <p className="text-sm mb-1 text-black">총 수입</p>
                     <p className="text-2xl font-bold text-green-600">
                       {formatAmount(monthlyData.totalIncome)}
                     </p>
@@ -257,7 +257,7 @@ export default function Report() {
                 )}
                 {monthlyData.totalExpense > 0 && (
                   <div className="bg-red-50 p-4 rounded-lg">
-                    <p className="text-sm text-gray-600 mb-1">총 지출</p>
+                    <p className="text-sm mb-1 text-black">총 지출</p>
                     <p className="text-2xl font-bold text-red-600">
                       {formatAmount(monthlyData.totalExpense)}
                     </p>
@@ -268,7 +268,7 @@ export default function Report() {
                     monthlyData.balance >= 0 ? 'bg-blue-50' : 'bg-orange-50'
                   }`}
                 >
-                  <p className="text-sm text-gray-600 mb-1">잔액</p>
+                  <p className="text-sm mb-1 text-black">잔액</p>
                   <p
                     className={`text-2xl font-bold ${
                       monthlyData.balance >= 0 ? 'text-blue-600' : 'text-orange-600'
@@ -282,7 +282,7 @@ export default function Report() {
               {/* 원형 그래프 */}
               {monthlyData.pieData.length > 0 ? (
                 <div className="mb-6">
-                  <h3 className="text-lg font-semibold mb-4">지출 카테고리별 분포</h3>
+                  <h3 className="text-lg font-semibold mb-4 text-black">지출 카테고리별 분포</h3>
                   <div className="flex justify-center">
                     <ResponsiveContainer width="100%" height={400}>
                       <PieChart>
@@ -324,7 +324,7 @@ export default function Report() {
       ) : (
         /* 카테고리 리포트 */
         <div className="bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-2xl font-bold mb-6">카테고리 리포트</h2>
+          <h2 className="text-2xl font-bold mb-6 text-black">카테고리 리포트</h2>
 
           <div className="space-y-4 mb-6">
             <div>
@@ -369,11 +369,11 @@ export default function Report() {
             <div className="space-y-6">
               {/* 총합 */}
               <div className="bg-blue-50 p-6 rounded-lg">
-                <h3 className="text-lg font-semibold mb-2">기간별 총합</h3>
+                <h3 className="text-lg font-semibold mb-2 text-black">기간별 총합</h3>
                 <p className="text-3xl font-bold text-blue-600">
                   {formatAmount(categoryReportData.totalAmount)}
                 </p>
-                <p className="text-sm text-gray-600 mt-2">
+                <p className="text-sm mt-2 text-black">
                   거래 건수: {categoryReportData.transactionCount}건
                 </p>
               </div>
@@ -381,7 +381,7 @@ export default function Report() {
               {/* TOP 3 달 */}
               {categoryReportData.top3Months.length > 0 ? (
                 <div>
-                  <h3 className="text-lg font-semibold mb-4">TOP 3 많이 사용한 달</h3>
+                  <h3 className="text-lg font-semibold mb-4 text-black">TOP 3 많이 사용한 달</h3>
                   <div className="space-y-3">
                     {categoryReportData.top3Months.map((item, index) => (
                       <div
@@ -392,7 +392,7 @@ export default function Report() {
                           <span className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-600 text-white font-bold">
                             {index + 1}
                           </span>
-                          <span className="font-medium">{item.displayMonth}</span>
+                          <span className="font-medium text-black">{item.displayMonth}</span>
                         </div>
                         <span className="text-xl font-bold text-blue-600">
                           {formatAmount(item.amount)}
@@ -402,16 +402,16 @@ export default function Report() {
                   </div>
                 </div>
               ) : (
-                <p className="text-center py-8 text-gray-500">
-                  선택한 기간에 해당 카테고리의 거래 내역이 없습니다.
-                </p>
-              )}
-            </div>
-          ) : (
-            <p className="text-center py-8 text-gray-500">
-              카테고리와 기간을 선택해주세요.
-            </p>
-          )}
+              <p className="text-center py-8 text-black">
+                선택한 기간에 해당 카테고리의 거래 내역이 없습니다.
+              </p>
+            )}
+          </div>
+        ) : (
+          <p className="text-center py-8 text-black">
+            카테고리와 기간을 선택해주세요.
+          </p>
+        )}
         </div>
       )}
     </div>

@@ -140,7 +140,7 @@ export default function BulkTransactionForm({ onSuccess }: { onSuccess: () => vo
   return (
     <form onSubmit={handleSubmit} className="bg-white p-6 rounded-lg shadow-md mb-6">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-bold">일괄 입력 (엑셀 형태)</h2>
+        <h2 className="text-xl font-bold text-black">일괄 입력 (엑셀 형태)</h2>
         <button
           type="button"
           onClick={addRow}
@@ -154,12 +154,12 @@ export default function BulkTransactionForm({ onSuccess }: { onSuccess: () => vo
         <table className="w-full border-collapse">
           <thead>
             <tr className="bg-gray-100">
-              <th className="border p-2 text-left text-sm font-medium">유형</th>
-              <th className="border p-2 text-left text-sm font-medium">카테고리</th>
-              <th className="border p-2 text-left text-sm font-medium">금액</th>
-              <th className="border p-2 text-left text-sm font-medium">설명</th>
-              <th className="border p-2 text-left text-sm font-medium">날짜</th>
-              <th className="border p-2 text-center text-sm font-medium w-16">삭제</th>
+              <th className="border p-2 text-left text-sm font-medium text-black">유형</th>
+              <th className="border p-2 text-left text-sm font-medium text-black">카테고리</th>
+              <th className="border p-2 text-left text-sm font-medium text-black">금액</th>
+              <th className="border p-2 text-left text-sm font-medium text-black">설명</th>
+              <th className="border p-2 text-left text-sm font-medium text-black">날짜</th>
+              <th className="border p-2 text-center text-sm font-medium w-16 text-black">삭제</th>
             </tr>
           </thead>
           <tbody>

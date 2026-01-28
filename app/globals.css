@@ -20,7 +20,7 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
-/* 입력 필드 기본 스타일 개선 */
+/* 입력 필드 기본 스타일 개선 - 검정색 텍스트 */
 input[type="text"],
 input[type="number"],
 input[type="date"],
@@ -28,23 +28,45 @@ input[type="email"],
 input[type="password"],
 select,
 textarea {
-  color: #111827; /* text-gray-900 */
+  color: #000000 !important; /* 검정색 */
   background-color: #ffffff;
 }
 
 input::placeholder,
 textarea::placeholder {
-  color: #9ca3af; /* text-gray-400 */
+  color: #6b7280 !important; /* placeholder는 약간 회색 유지 */
   opacity: 1;
 }
 
 select option {
-  color: #111827; /* text-gray-900 */
+  color: #000000 !important; /* 검정색 */
   background-color: #ffffff;
 }
 
 select option:disabled {
-  color: #6b7280; /* text-gray-500 */
+  color: #6b7280;
+}
+
+/* 라벨을 검정색으로 */
+label {
+  color: #000000 !important;
+}
+
+/* 제목과 본문 텍스트를 검정색으로 (색상이 지정되지 않은 경우) */
+h1, h2, h3, h4, h5, h6 {
+  color: #000000 !important;
+}
+
+/* 회색 텍스트 클래스를 검정색으로 (통계 숫자 제외) */
+.text-gray-500:not(.text-green-600):not(.text-red-600):not(.text-blue-600):not(.text-orange-600),
+.text-gray-600:not(.text-green-600):not(.text-red-600):not(.text-blue-600):not(.text-orange-600),
+.text-gray-700:not(.text-green-600):not(.text-red-600):not(.text-blue-600):not(.text-orange-600) {
+  color: #000000 !important;
+}
+
+/* 테이블 헤더와 본문 텍스트 */
+th, td {
+  color: #000000 !important;
 }
 
 @layer utilities {
