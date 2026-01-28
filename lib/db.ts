@@ -34,6 +34,18 @@ export async function addTransactions(transactions: TransactionFormData[]) {
   return data as Transaction[];
 }
 
+export async function updateTransaction(id: string, transaction: TransactionFormData) {
+  const { data, error } = await supabase
+    .from('transactions')
+    .update(transaction)
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data as Transaction;
+}
+
 export async function deleteTransaction(id: string) {
   const { error } = await supabase
     .from('transactions')

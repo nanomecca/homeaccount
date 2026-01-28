@@ -31,6 +31,13 @@ export async function addTransactions(transactions: TransactionFormData[]): Prom
   return supabaseDb.addTransactions(transactions);
 }
 
+export async function updateTransaction(id: string, transaction: TransactionFormData): Promise<Transaction> {
+  if (USE_LOCAL_POSTGRES) {
+    return postgresDb.updateTransaction(id, transaction);
+  }
+  return supabaseDb.updateTransaction(id, transaction);
+}
+
 export async function deleteTransaction(id: string): Promise<void> {
   if (USE_LOCAL_POSTGRES) {
     return postgresDb.deleteTransaction(id);

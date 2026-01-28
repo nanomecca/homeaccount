@@ -76,6 +76,25 @@ export async function addTransactions(transactions: TransactionFormData[]): Prom
   }
 }
 
+export async function updateTransaction(id: string, transaction: TransactionFormData): Promise<Transaction> {
+  const client = await getPool().connect();
+  try {
+    const result = await client.query(
+      `UPDATE transactions 
+       SET type = $1, amount = $2, category = $3, description = $4, date = $5
+       WHERE id = $6
+       RETURNING *`,
+      [transaction.type, transaction.amount, transaction.category, transaction.description || null, transaction.date, id]
+    );
+    return {
+      ...result.rows[0],
+      amount: parseFloat(result.rows[0].amount),
+    } as Transaction;
+  } finally {
+    client.release();
+  }
+}
+
 export async function deleteTransaction(id: string): Promise<void> {
   const client = await getPool().connect();
   try {

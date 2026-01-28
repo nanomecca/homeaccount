@@ -6,6 +6,7 @@ import BulkTransactionForm from './components/BulkTransactionForm';
 import CategoryManager from './components/CategoryManager';
 import TransactionList from './components/TransactionList';
 import DateFilter from './components/DateFilter';
+import MonthlyReport from './components/MonthlyReport';
 import { getTransactions, getTransactionsByDateRange } from '@/lib/db-client';
 import { Transaction } from '@/types/transaction';
 
@@ -14,7 +15,7 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(true);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
-  const [activeTab, setActiveTab] = useState<'single' | 'bulk' | 'category'>('single');
+  const [activeTab, setActiveTab] = useState<'single' | 'bulk' | 'category' | 'report'>('single');
 
   const loadTransactions = async () => {
     setIsLoading(true);
@@ -81,6 +82,16 @@ export default function Home() {
             >
               카테고리 관리
             </button>
+            <button
+              onClick={() => setActiveTab('report')}
+              className={`py-2 px-4 border-b-2 font-medium text-sm ${
+                activeTab === 'report'
+                  ? 'border-blue-600 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              월별 리포트
+            </button>
           </nav>
         </div>
 
@@ -94,8 +105,32 @@ export default function Home() {
         {activeTab === 'category' && (
           <CategoryManager onCategoryChange={handleCategoryChange} />
         )}
+        {activeTab === 'report' && (
+          <MonthlyReport />
+        )}
         
-        <DateFilter
+        {activeTab !== 'report' && (
+          <>
+            <DateFilter
+              startDate={startDate}
+              endDate={endDate}
+              onStartDateChange={setStartDate}
+              onEndDateChange={setEndDate}
+            />
+
+            {isLoading ? (
+              <div className="bg-white rounded-lg shadow-md p-8 text-center">
+                <p className="text-gray-600">로딩 중...</p>
+              </div>
+            ) : (
+              <TransactionList transactions={transactions} onDelete={loadTransactions} />
+            )}
+          </>
+        )}
+      </div>
+    </main>
+  );
+}
           startDate={startDate}
           endDate={endDate}
           onStartDateChange={setStartDate}

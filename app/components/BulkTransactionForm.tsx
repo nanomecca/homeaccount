@@ -143,8 +143,8 @@ export default function BulkTransactionForm({ onSuccess }: { onSuccess: () => vo
           <thead>
             <tr className="bg-gray-100">
               <th className="border p-2 text-left text-sm font-medium">유형</th>
-              <th className="border p-2 text-left text-sm font-medium">금액</th>
               <th className="border p-2 text-left text-sm font-medium">카테고리</th>
+              <th className="border p-2 text-left text-sm font-medium">금액</th>
               <th className="border p-2 text-left text-sm font-medium">설명</th>
               <th className="border p-2 text-left text-sm font-medium">날짜</th>
               <th className="border p-2 text-center text-sm font-medium w-16">삭제</th>
@@ -171,18 +171,6 @@ export default function BulkTransactionForm({ onSuccess }: { onSuccess: () => vo
                     </select>
                   </td>
                   <td className="border p-1">
-                    <input
-                      type="number"
-                      value={row.amount}
-                      onChange={(e) => updateRow(row.id, 'amount', e.target.value)}
-                      className="w-full p-1 text-sm border border-gray-300 rounded"
-                      min="0"
-                      step="0.01"
-                      placeholder="0"
-                      required
-                    />
-                  </td>
-                  <td className="border p-1">
                     <select
                       value={row.category}
                       onChange={(e) => updateRow(row.id, 'category', e.target.value)}
@@ -196,6 +184,18 @@ export default function BulkTransactionForm({ onSuccess }: { onSuccess: () => vo
                         </option>
                       ))}
                     </select>
+                  </td>
+                  <td className="border p-1">
+                    <input
+                      type="number"
+                      value={row.amount}
+                      onChange={(e) => updateRow(row.id, 'amount', e.target.value)}
+                      className="w-full p-1 text-sm border border-gray-300 rounded"
+                      min="0"
+                      step="0.01"
+                      placeholder="0"
+                      required
+                    />
                   </td>
                   <td className="border p-1">
                     <input

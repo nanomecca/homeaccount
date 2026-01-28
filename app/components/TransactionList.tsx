@@ -1,7 +1,9 @@
 'use client';
 
+import { useState } from 'react';
 import { Transaction } from '@/types/transaction';
 import { deleteTransaction } from '@/lib/db-client';
+import TransactionEditModal from './TransactionEditModal';
 
 interface TransactionListProps {
   transactions: Transaction[];
@@ -9,6 +11,8 @@ interface TransactionListProps {
 }
 
 export default function TransactionList({ transactions, onDelete }: TransactionListProps) {
+  const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
+
   const handleDelete = async (id: string) => {
     if (!confirm('정말 삭제하시겠습니까?')) return;
 
@@ -19,6 +23,15 @@ export default function TransactionList({ transactions, onDelete }: TransactionL
       console.error('거래 삭제 실패:', error);
       alert('거래 삭제에 실패했습니다.');
     }
+  };
+
+  const handleEdit = (transaction: Transaction) => {
+    setEditingTransaction(transaction);
+  };
+
+  const handleEditSuccess = () => {
+    setEditingTransaction(null);
+    onDelete();
   };
 
   const formatDate = (dateString: string) => {
@@ -109,18 +122,34 @@ export default function TransactionList({ transactions, onDelete }: TransactionL
                     {formatAmount(Number(transaction.amount))}
                   </td>
                   <td className="p-2 text-center">
-                    <button
-                      onClick={() => handleDelete(transaction.id)}
-                      className="text-red-600 hover:text-red-800 text-sm"
-                    >
-                      삭제
-                    </button>
+                    <div className="flex gap-2 justify-center">
+                      <button
+                        onClick={() => handleEdit(transaction)}
+                        className="text-blue-600 hover:text-blue-800 text-sm"
+                      >
+                        수정
+                      </button>
+                      <button
+                        onClick={() => handleDelete(transaction.id)}
+                        className="text-red-600 hover:text-red-800 text-sm"
+                      >
+                        삭제
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
+      )}
+
+      {editingTransaction && (
+        <TransactionEditModal
+          transaction={editingTransaction}
+          onClose={() => setEditingTransaction(null)}
+          onSuccess={handleEditSuccess}
+        />
       )}
     </div>
   );

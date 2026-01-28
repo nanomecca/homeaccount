@@ -55,6 +55,16 @@ export async function addTransactions(transactions: TransactionFormData[]): Prom
   return supabaseDb.addTransactions(transactions);
 }
 
+export async function updateTransaction(id: string, transaction: TransactionFormData): Promise<Transaction> {
+  if (USE_LOCAL_POSTGRES) {
+    return apiRequest<Transaction>(`/transactions?id=${encodeURIComponent(id)}`, {
+      method: 'PUT',
+      body: JSON.stringify(transaction),
+    });
+  }
+  return supabaseDb.updateTransaction(id, transaction);
+}
+
 export async function deleteTransaction(id: string): Promise<void> {
   if (USE_LOCAL_POSTGRES) {
     await apiRequest('/transactions?id=' + encodeURIComponent(id), {
