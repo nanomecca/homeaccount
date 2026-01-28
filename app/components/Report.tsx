@@ -283,8 +283,6 @@ export default function Report() {
   const years = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i);
   const months = Array.from({ length: 12 }, (_, i) => i + 1);
 
-  const allCategories = categories.map((cat) => cat.name);
-
   // 유형 표시 이름 가져오기
   const getTypeDisplayName = (typeName: string) => {
     const type = types.find(t => t.name === typeName);
