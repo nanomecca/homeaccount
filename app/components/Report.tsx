@@ -95,6 +95,29 @@ export default function Report() {
       })
       .sort((a, b) => b.value - a.value);
 
+    // 지출 카테고리별 데이터
+    const expenseByCategory = monthlyTransactions
+      .filter((t) => t.type === 'expense')
+      .reduce((acc, t) => {
+        const category = t.category;
+        if (!acc[category]) {
+          acc[category] = 0;
+        }
+        acc[category] += Number(t.amount);
+        return acc;
+      }, {} as Record<string, number>);
+
+    const expenseCategoryData = Object.entries(expenseByCategory)
+      .map(([name, value]) => ({
+        name,
+        value,
+        percent: totalExpense > 0 ? Math.round((value / totalExpense) * 100) : 0,
+      }))
+      .sort((a, b) => b.value - a.value);
+
+    // 수입 대비 지출 퍼센트
+    const expenseRatio = totalIncome > 0 ? Math.round((totalExpense / totalIncome) * 100) : 0;
+
     return {
       transactions: monthlyTransactions,
       totalIncome,
@@ -102,6 +125,8 @@ export default function Report() {
       totalOther,
       balance: totalIncome - totalExpense - totalOther,
       barData,
+      expenseCategoryData,
+      expenseRatio,
       byType,
     };
   };
@@ -340,7 +365,7 @@ export default function Report() {
           ) : (
             <>
               {/* 요약 통계 */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
                 {monthlyData.totalIncome > 0 && (
                   <div className="bg-green-50 p-4 rounded-lg">
                     <p className="text-sm mb-1 text-black">총 수입</p>
@@ -355,6 +380,11 @@ export default function Report() {
                     <p className="text-2xl font-bold text-red-600">
                       {formatAmount(monthlyData.totalExpense)}
                     </p>
+                    {monthlyData.totalIncome > 0 && (
+                      <p className="text-sm mt-1 text-gray-600">
+                        수입 대비 {monthlyData.expenseRatio}%
+                      </p>
+                    )}
                   </div>
                 )}
                 <div
@@ -371,6 +401,17 @@ export default function Report() {
                     {formatAmount(monthlyData.balance)}
                   </p>
                 </div>
+                {monthlyData.totalIncome > 0 && monthlyData.totalExpense > 0 && (
+                  <div className="bg-purple-50 p-4 rounded-lg">
+                    <p className="text-sm mb-1 text-black">지출 비율</p>
+                    <p className="text-2xl font-bold text-purple-600">
+                      {monthlyData.expenseRatio}%
+                    </p>
+                    <p className="text-xs mt-1 text-gray-600">
+                      수입 대비 지출
+                    </p>
+                  </div>
+                )}
               </div>
 
               {/* 세로 막대 그래프 */}
@@ -427,6 +468,87 @@ export default function Report() {
                 <p className="text-center py-8 text-black">
                   {selectedYear}년 {selectedMonth}월에 거래 내역이 없습니다.
                 </p>
+              )}
+
+              {/* 지출 카테고리별 리포트 */}
+              {monthlyData.expenseCategoryData.length > 0 && (
+                <div className="mb-6">
+                  <h3 className="text-lg font-semibold mb-4 text-black">지출 카테고리별 리포트</h3>
+                  <div className="flex justify-center mb-4">
+                    <ResponsiveContainer width="100%" height={400}>
+                      <BarChart
+                        data={monthlyData.expenseCategoryData}
+                        layout="vertical"
+                        margin={{ top: 20, right: 30, left: 100, bottom: 5 }}
+                      >
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis 
+                          type="number" 
+                          tickFormatter={(value) => formatAmount(value).replace('₩', '')}
+                          tick={{ fill: '#000' }}
+                        />
+                        <YAxis 
+                          type="category" 
+                          dataKey="name" 
+                          width={90}
+                          tick={{ fill: '#000' }}
+                        />
+                        <Tooltip
+                          formatter={(value: number) => formatAmount(value)}
+                          labelStyle={{ color: '#000' }}
+                        />
+                        <Legend />
+                        <Bar 
+                          dataKey="value" 
+                          name="금액"
+                          radius={[0, 4, 4, 0]}
+                          fill="#EF4444"
+                        >
+                          {monthlyData.expenseCategoryData.map((entry, index) => (
+                            <Cell
+                              key={`cell-${index}`}
+                              fill={COLORS[index % COLORS.length]}
+                            />
+                          ))}
+                          <LabelList 
+                            dataKey="percent" 
+                            position="right" 
+                            formatter={(value: number) => `${value}%`}
+                            style={{ fill: '#000', fontWeight: 'bold' }}
+                          />
+                        </Bar>
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                  {/* 지출 카테고리별 상세 테이블 */}
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <h4 className="text-md font-semibold mb-3 text-black">지출 카테고리별 상세</h4>
+                    <div className="overflow-x-auto">
+                      <table className="w-full">
+                        <thead>
+                          <tr className="border-b">
+                            <th className="text-left p-2 text-black">카테고리</th>
+                            <th className="text-right p-2 text-black">금액</th>
+                            <th className="text-right p-2 text-black">비율</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {monthlyData.expenseCategoryData.map((item, index) => (
+                            <tr key={item.name} className="border-b hover:bg-gray-100">
+                              <td className="p-2 text-black">{item.name}</td>
+                              <td className="p-2 text-right font-semibold text-red-600">
+                                {formatAmount(item.value)}
+                              </td>
+                              <td className="p-2 text-right text-gray-600">
+                                {item.percent}%
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
               )}
             </>
           )}
