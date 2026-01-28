@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Asset, AssetFormData } from '@/types/asset';
-import { formatAmount } from '@/lib/format-amount';
+import { formatAmount, formatAmountInput, parseAmountInput, extractNumbers } from '@/lib/format-amount';
 
 export default function AssetManager() {
   const [assets, setAssets] = useState<Asset[]>([]);
@@ -100,6 +100,40 @@ export default function AssetManager() {
     } catch (error) {
       console.error('자산 삭제 실패:', error);
       alert('자산 삭제에 실패했습니다.');
+    }
+  };
+
+  const handleMaturity = async (id: string) => {
+    if (!confirm('만기 처리하시겠습니까?')) return;
+
+    try {
+      const response = await fetch(`/api/assets/${id}/status`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'matured' }),
+      });
+      if (!response.ok) throw new Error('만기 처리 실패');
+      loadAssets();
+    } catch (error) {
+      console.error('만기 처리 실패:', error);
+      alert('만기 처리에 실패했습니다.');
+    }
+  };
+
+  const handleClose = async (id: string) => {
+    if (!confirm('해제 처리하시겠습니까?')) return;
+
+    try {
+      const response = await fetch(`/api/assets/${id}/status`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'closed' }),
+      });
+      if (!response.ok) throw new Error('해제 처리 실패');
+      loadAssets();
+    } catch (error) {
+      console.error('해제 처리 실패:', error);
+      alert('해제 처리에 실패했습니다.');
     }
   };
 
@@ -207,16 +241,25 @@ export default function AssetManager() {
             </div>
             <div>
               <label className="block text-sm font-medium mb-2 text-black">금액 (원)</label>
-              <input
-                type="number"
-                value={formData.amount || ''}
-                onChange={(e) => setFormData({ ...formData, amount: Number(e.target.value) })}
-                className="w-full p-2 border border-gray-300 rounded-md text-black bg-white"
-                placeholder="0"
-                min="0"
-                step="1"
-                required
-              />
+              <div className="relative">
+                <input
+                  type="text"
+                  value={formatAmountInput(formData.amount)}
+                  onChange={(e) => {
+                    const numbers = extractNumbers(e.target.value);
+                    const parsed = parseAmountInput(numbers);
+                    setFormData({ ...formData, amount: parsed });
+                  }}
+                  onBlur={(e) => {
+                    const parsed = parseAmountInput(e.target.value);
+                    setFormData({ ...formData, amount: parsed });
+                  }}
+                  className="w-full p-2 border border-gray-300 rounded-md text-black bg-white pr-8"
+                  placeholder="0"
+                  required
+                />
+                <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm">원</span>
+              </div>
             </div>
             <div>
               <label className="block text-sm font-medium mb-2 text-black">연 이자율 (%)</label>
@@ -276,19 +319,24 @@ export default function AssetManager() {
                 <th className="text-right p-2 text-black">예상 이자 (세전)</th>
                 <th className="text-right p-2 text-black">예상 이자 (세후)</th>
                 <th className="text-left p-2 text-black">만기까지</th>
+                <th className="text-left p-2 text-black">상태</th>
                 <th className="text-center p-2 text-black">작업</th>
               </tr>
             </thead>
             <tbody>
               {assets.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="text-center p-4 text-gray-600">
+                  <td colSpan={10} className="text-center p-4 text-gray-600">
                     등록된 자산이 없습니다.
                   </td>
                 </tr>
               ) : (
                 assets.map((asset) => {
                   const interest = calculateInterest(asset);
+                  const status = asset.status || 'active';
+                  const statusText = status === 'active' ? '활성' : status === 'matured' ? '만기' : '해제';
+                  const statusColor = status === 'active' ? 'text-green-600' : status === 'matured' ? 'text-orange-600' : 'text-gray-600';
+                  
                   return (
                     <tr key={asset.id} className="border-b hover:bg-gray-50">
                       <td className="p-2 text-black">{asset.type === 'savings' ? '적금' : '예금'}</td>
@@ -299,8 +347,25 @@ export default function AssetManager() {
                       <td className="p-2 text-right text-green-600">{formatAmount(interest.beforeTax)}</td>
                       <td className="p-2 text-right text-purple-600">{formatAmount(interest.afterTax)}</td>
                       <td className="p-2 text-black">{interest.daysRemaining}일</td>
+                      <td className={`p-2 font-semibold ${statusColor}`}>{statusText}</td>
                       <td className="p-2">
-                        <div className="flex gap-2 justify-center">
+                        <div className="flex gap-2 justify-center flex-wrap">
+                          {status === 'active' && (
+                            <>
+                              <button
+                                onClick={() => handleMaturity(asset.id)}
+                                className="px-2 py-1 bg-orange-600 text-white text-sm rounded hover:bg-orange-700"
+                              >
+                                만기
+                              </button>
+                              <button
+                                onClick={() => handleClose(asset.id)}
+                                className="px-2 py-1 bg-gray-600 text-white text-sm rounded hover:bg-gray-700"
+                              >
+                                해제
+                              </button>
+                            </>
+                          )}
                           <button
                             onClick={() => handleEdit(asset)}
                             className="px-2 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"

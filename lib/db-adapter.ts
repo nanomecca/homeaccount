@@ -133,3 +133,10 @@ export async function deleteAsset(id: string): Promise<void> {
   }
   return supabaseDb.deleteAsset(id);
 }
+
+export async function updateAssetStatus(id: string, status: 'active' | 'matured' | 'closed'): Promise<Asset> {
+  if (USE_LOCAL_POSTGRES) {
+    return postgresDb.updateAssetStatus(id, status);
+  }
+  return supabaseDb.updateAssetStatus(id, status);
+}

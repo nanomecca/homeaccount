@@ -274,3 +274,15 @@ export async function deleteAsset(id: string): Promise<void> {
 
   if (error) throw error;
 }
+
+export async function updateAssetStatus(id: string, status: 'active' | 'matured' | 'closed'): Promise<Asset> {
+  const { data, error } = await supabase
+    .from('assets')
+    .update({ status, updated_at: new Date().toISOString() })
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data as Asset;
+}

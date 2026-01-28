@@ -5,6 +5,7 @@ export interface Asset {
   amount: number;
   interest_rate: number; // 연 이자율 (%)
   maturity_date: string; // 만기일 (YYYY-MM-DD)
+  status?: 'active' | 'matured' | 'closed'; // 상태: 활성, 만기, 해제
   created_at?: string;
   updated_at?: string;
 }
@@ -15,4 +16,5 @@ export interface AssetFormData {
   amount: number;
   interest_rate: number;
   maturity_date: string;
+  status?: 'active' | 'matured' | 'closed';
 }

@@ -286,3 +286,19 @@ export async function deleteAsset(id: string): Promise<void> {
     client.release();
   }
 }
+
+export async function updateAssetStatus(id: string, status: 'active' | 'matured' | 'closed'): Promise<Asset> {
+  const client = await getPool().connect();
+  try {
+    const result = await client.query(
+      `UPDATE assets 
+       SET status = $1, updated_at = NOW()
+       WHERE id = $2
+       RETURNING *`,
+      [status, id]
+    );
+    return result.rows[0] as Asset;
+  } finally {
+    client.release();
+  }
+}
