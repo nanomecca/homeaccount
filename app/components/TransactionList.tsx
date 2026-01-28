@@ -85,69 +85,9 @@ export default function TransactionList({ transactions, onDelete }: TransactionL
 
   const balance = totalIncome - totalExpense;
 
-  // 엑셀 다운로드 함수
-  const exportToExcel = async () => {
-    if (transactions.length === 0) {
-      alert('다운로드할 거래 내역이 없습니다.');
-      return;
-    }
-
-    try {
-      // 파일명 생성 (날짜 범위 포함)
-      const today = new Date();
-      const dateStr = today.toISOString().split('T')[0].replace(/-/g, '');
-      const fileName = `거래내역_${dateStr}.xlsx`;
-
-      // 유형 표시 이름 변환
-      const dataWithDisplayNames = transactions.map((t) => ({
-        ...t,
-        type: getTypeDisplay(t.type),
-      }));
-
-      const response = await fetch('/api/export-excel', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          transactions: dataWithDisplayNames,
-          fileName,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('엑셀 생성 실패');
-      }
-
-      // Blob으로 변환 후 다운로드
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = fileName;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-    } catch (error) {
-      console.error('엑셀 다운로드 실패:', error);
-      alert('엑셀 다운로드에 실패했습니다.');
-    }
-  };
-
   return (
     <div className="bg-white rounded-lg shadow-md p-6">
-      <div className="mb-6 flex justify-between items-center">
-        <h2 className="text-xl font-bold text-black">거래 내역</h2>
-        {transactions.length > 0 && (
-          <button
-            onClick={exportToExcel}
-            className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors"
-          >
-            엑셀 다운로드
-          </button>
-        )}
-      </div>
+      <h2 className="text-xl font-bold mb-4 text-black">거래 내역</h2>
       
       <div className="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="bg-green-50 p-4 rounded-lg">
