@@ -76,6 +76,31 @@ export async function deleteCategory(id: string): Promise<void> {
   return supabaseDb.deleteCategory(id);
 }
 
+export async function updateCategory(id: string, category: CategoryFormData): Promise<Category> {
+  if (USE_LOCAL_POSTGRES) {
+    return postgresDb.updateCategory(id, category);
+  }
+  return supabaseDb.updateCategory(id, category);
+}
+
+export async function updateMainCategory(
+  type: string,
+  oldMainCategory: string,
+  newMainCategory: string
+): Promise<void> {
+  if (USE_LOCAL_POSTGRES) {
+    return postgresDb.updateMainCategory(type, oldMainCategory, newMainCategory);
+  }
+  return supabaseDb.updateMainCategory(type, oldMainCategory, newMainCategory);
+}
+
+export async function updateSubCategory(id: string, newName: string): Promise<void> {
+  if (USE_LOCAL_POSTGRES) {
+    return postgresDb.updateSubCategory(id, newName);
+  }
+  return supabaseDb.updateSubCategory(id, newName);
+}
+
 // Transaction Types
 export async function getTransactionTypes(): Promise<TransactionType[]> {
   if (USE_LOCAL_POSTGRES) {

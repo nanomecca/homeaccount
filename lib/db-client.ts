@@ -114,6 +114,42 @@ export async function deleteCategory(id: string): Promise<void> {
   return supabaseDb.deleteCategory(id);
 }
 
+export async function updateCategory(id: string, category: CategoryFormData): Promise<Category> {
+  if (USE_LOCAL_POSTGRES) {
+    return apiRequest<Category>(`/categories?id=${encodeURIComponent(id)}`, {
+      method: 'PUT',
+      body: JSON.stringify(category),
+    });
+  }
+  return supabaseDb.updateCategory(id, category);
+}
+
+export async function updateMainCategory(
+  type: string,
+  oldMainCategory: string,
+  newMainCategory: string
+): Promise<void> {
+  if (USE_LOCAL_POSTGRES) {
+    await apiRequest('/categories/update-main', {
+      method: 'PUT',
+      body: JSON.stringify({ type, oldMainCategory, newMainCategory }),
+    });
+    return;
+  }
+  return supabaseDb.updateMainCategory(type, oldMainCategory, newMainCategory);
+}
+
+export async function updateSubCategory(id: string, newName: string): Promise<void> {
+  if (USE_LOCAL_POSTGRES) {
+    await apiRequest('/categories/update-sub', {
+      method: 'PUT',
+      body: JSON.stringify({ id, newName }),
+    });
+    return;
+  }
+  return supabaseDb.updateSubCategory(id, newName);
+}
+
 export async function getMainCategories(type?: string): Promise<string[]> {
   if (USE_LOCAL_POSTGRES) {
     const url = type ? `/categories?type=${encodeURIComponent(type)}&mainOnly=true` : '/categories?mainOnly=true';

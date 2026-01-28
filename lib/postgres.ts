@@ -149,18 +149,18 @@ export async function addCategory(category: CategoryFormData): Promise<Category>
   const client = await getPool().connect();
   try {
     const result = await client.query(
-      `INSERT INTO categories (type, name)
-       VALUES ($1, $2)
-       ON CONFLICT (type, name) DO NOTHING
+      `INSERT INTO categories (type, main_category, name)
+       VALUES ($1, $2, $3)
+       ON CONFLICT (type, main_category, name) DO NOTHING
        RETURNING *`,
-      [category.type, category.name]
+      [category.type, category.main_category, category.name]
     );
     
     if (result.rows.length === 0) {
       // 이미 존재하는 경우 조회
       const existing = await client.query(
-        'SELECT * FROM categories WHERE type = $1 AND name = $2',
-        [category.type, category.name]
+        'SELECT * FROM categories WHERE type = $1 AND main_category = $2 AND name = $3',
+        [category.type, category.main_category, category.name]
       );
       return existing.rows[0] as Category;
     }
@@ -175,6 +175,108 @@ export async function deleteCategory(id: string): Promise<void> {
   const client = await getPool().connect();
   try {
     await client.query('DELETE FROM categories WHERE id = $1', [id]);
+  } finally {
+    client.release();
+  }
+}
+
+export async function updateCategory(id: string, category: CategoryFormData): Promise<Category> {
+  const client = await getPool().connect();
+  try {
+    const result = await client.query(
+      `UPDATE categories 
+       SET type = $1, main_category = $2, name = $3
+       WHERE id = $4
+       RETURNING *`,
+      [category.type, category.main_category, category.name, id]
+    );
+    return result.rows[0] as Category;
+  } finally {
+    client.release();
+  }
+}
+
+// 대분류 이름 변경 (해당 유형의 모든 카테고리와 거래 업데이트)
+export async function updateMainCategory(
+  type: string,
+  oldMainCategory: string,
+  newMainCategory: string
+): Promise<void> {
+  const client = await getPool().connect();
+  try {
+    // 트랜잭션 시작
+    await client.query('BEGIN');
+    
+    // categories 테이블의 main_category 업데이트
+    await client.query(
+      `UPDATE categories 
+       SET main_category = $1
+       WHERE type = $2 AND main_category = $3`,
+      [newMainCategory, type, oldMainCategory]
+    );
+
+    // transactions 테이블의 main_category 업데이트
+    await client.query(
+      `UPDATE transactions 
+       SET main_category = $1
+       WHERE type = $2 AND main_category = $3`,
+      [newMainCategory, type, oldMainCategory]
+    );
+
+    // 트랜잭션 커밋
+    await client.query('COMMIT');
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
+// 소분류 이름 변경 (해당 카테고리와 거래 업데이트)
+export async function updateSubCategory(
+  id: string,
+  newName: string
+): Promise<void> {
+  const client = await getPool().connect();
+  try {
+    // 카테고리 정보 가져오기
+    const categoryResult = await client.query(
+      'SELECT * FROM categories WHERE id = $1',
+      [id]
+    );
+
+    if (categoryResult.rows.length === 0) {
+      throw new Error('Category not found');
+    }
+
+    const category = categoryResult.rows[0];
+    const { type, name: oldName } = category;
+
+    // 트랜잭션 시작
+    await client.query('BEGIN');
+
+    // categories 테이블의 name 업데이트
+    await client.query(
+      `UPDATE categories 
+       SET name = $1
+       WHERE id = $2`,
+      [newName, id]
+    );
+
+    // transactions 테이블의 category 업데이트
+    await client.query(
+      `UPDATE transactions 
+       SET category = $1
+       WHERE type = $2 AND category = $3`,
+      [newName, type, oldName]
+    );
+
+    // 트랜잭션 커밋
+    await client.query('COMMIT');
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
   } finally {
     client.release();
   }

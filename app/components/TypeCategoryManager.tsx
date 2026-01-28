@@ -11,6 +11,8 @@ import {
   getCategories,
   addCategory,
   deleteCategory,
+  updateMainCategory,
+  updateSubCategory,
 } from '@/lib/db-client';
 
 export default function TypeCategoryManager({ onChange }: { onChange: () => void }) {
@@ -32,6 +34,10 @@ export default function TypeCategoryManager({ onChange }: { onChange: () => void
   const [newSubCategoryName, setNewSubCategoryName] = useState('');
   const [isAddingCategory, setIsAddingCategory] = useState(false);
   const [showAddMainCategory, setShowAddMainCategory] = useState(false);
+  const [editingMainCategory, setEditingMainCategory] = useState<string | null>(null);
+  const [editingMainCategoryName, setEditingMainCategoryName] = useState('');
+  const [editingSubCategory, setEditingSubCategory] = useState<string | null>(null);
+  const [editingSubCategoryName, setEditingSubCategoryName] = useState('');
 
   useEffect(() => {
     loadData();
@@ -221,6 +227,90 @@ export default function TypeCategoryManager({ onChange }: { onChange: () => void
     }
   };
 
+  const handleMainCategoryEdit = (mainCategory: string) => {
+    setEditingMainCategory(mainCategory);
+    setEditingMainCategoryName(mainCategory);
+  };
+
+  const handleMainCategoryUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingMainCategory || !editingMainCategoryName.trim() || !selectedType) return;
+    if (editingMainCategoryName.trim() === editingMainCategory) {
+      setEditingMainCategory(null);
+      return;
+    }
+
+    setIsAddingCategory(true);
+    try {
+      await updateMainCategory(
+        selectedType,
+        editingMainCategory,
+        editingMainCategoryName.trim()
+      );
+      setEditingMainCategory(null);
+      setEditingMainCategoryName('');
+      if (selectedMainCategory === editingMainCategory) {
+        setSelectedMainCategory(editingMainCategoryName.trim());
+      }
+      await loadData();
+      onChange();
+    } catch (error: any) {
+      console.error('대분류 수정 실패:', error);
+      if (error.message?.includes('duplicate') || error.message?.includes('unique')) {
+        alert('이미 존재하는 대분류입니다.');
+      } else {
+        alert('대분류 수정에 실패했습니다.');
+      }
+    } finally {
+      setIsAddingCategory(false);
+    }
+  };
+
+  const handleMainCategoryEditCancel = () => {
+    setEditingMainCategory(null);
+    setEditingMainCategoryName('');
+  };
+
+  const handleSubCategoryEdit = (category: Category) => {
+    setEditingSubCategory(category.id);
+    setEditingSubCategoryName(category.name);
+  };
+
+  const handleSubCategoryUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingSubCategory || !editingSubCategoryName.trim()) return;
+
+    const category = categories.find(c => c.id === editingSubCategory);
+    if (!category) return;
+    if (editingSubCategoryName.trim() === category.name) {
+      setEditingSubCategory(null);
+      return;
+    }
+
+    setIsAddingCategory(true);
+    try {
+      await updateSubCategory(editingSubCategory, editingSubCategoryName.trim());
+      setEditingSubCategory(null);
+      setEditingSubCategoryName('');
+      await loadData();
+      onChange();
+    } catch (error: any) {
+      console.error('소분류 수정 실패:', error);
+      if (error.message?.includes('duplicate') || error.message?.includes('unique')) {
+        alert('이미 존재하는 소분류입니다.');
+      } else {
+        alert('소분류 수정에 실패했습니다.');
+      }
+    } finally {
+      setIsAddingCategory(false);
+    }
+  };
+
+  const handleSubCategoryEditCancel = () => {
+    setEditingSubCategory(null);
+    setEditingSubCategoryName('');
+  };
+
   const mainCategories = getMainCategories();
   const subCategories = getSubCategories();
 
@@ -389,25 +479,64 @@ export default function TypeCategoryManager({ onChange }: { onChange: () => void
                     key={mainCat}
                     className="flex items-center gap-1"
                   >
-                    <button
-                      type="button"
-                      onClick={() => setSelectedMainCategory(mainCat)}
-                      className={`px-3 py-1 rounded-full text-sm transition-colors ${
-                        selectedMainCategory === mainCat
-                          ? 'bg-blue-600 text-white'
-                          : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-100'
-                      }`}
-                    >
-                      {mainCat}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleMainCategoryDelete(mainCat)}
-                      className="text-red-600 hover:text-red-800 text-sm px-1"
-                      title="대분류 삭제"
-                    >
-                      ×
-                    </button>
+                    {editingMainCategory === mainCat ? (
+                      <form onSubmit={handleMainCategoryUpdate} className="flex items-center gap-1">
+                        <input
+                          type="text"
+                          value={editingMainCategoryName}
+                          onChange={(e) => setEditingMainCategoryName(e.target.value)}
+                          className="px-3 py-1 border border-gray-300 rounded-full text-sm text-black bg-white"
+                          autoFocus
+                          required
+                        />
+                        <button
+                          type="submit"
+                          disabled={isAddingCategory}
+                          className="text-green-600 hover:text-green-800 text-sm px-1"
+                          title="저장"
+                        >
+                          ✓
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleMainCategoryEditCancel}
+                          className="text-gray-600 hover:text-gray-800 text-sm px-1"
+                          title="취소"
+                        >
+                          ×
+                        </button>
+                      </form>
+                    ) : (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => setSelectedMainCategory(mainCat)}
+                          className={`px-3 py-1 rounded-full text-sm transition-colors ${
+                            selectedMainCategory === mainCat
+                              ? 'bg-blue-600 text-white'
+                              : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-100'
+                          }`}
+                        >
+                          {mainCat}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleMainCategoryEdit(mainCat)}
+                          className="text-blue-600 hover:text-blue-800 text-sm px-1"
+                          title="대분류 수정"
+                        >
+                          ✎
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleMainCategoryDelete(mainCat)}
+                          className="text-red-600 hover:text-red-800 text-sm px-1"
+                          title="대분류 삭제"
+                        >
+                          ×
+                        </button>
+                      </>
+                    )}
                   </div>
                 ))}
                 {mainCategories.length === 0 && (
@@ -452,14 +581,52 @@ export default function TypeCategoryManager({ onChange }: { onChange: () => void
                         key={category.id}
                         className="flex items-center gap-2 bg-white px-3 py-1 rounded-full border border-gray-200"
                       >
-                        <span className="text-sm text-black">{category.name}</span>
-                        <button
-                          onClick={() => handleCategoryDelete(category.id)}
-                          className="text-red-600 hover:text-red-800 text-xs"
-                          title="삭제"
-                        >
-                          ×
-                        </button>
+                        {editingSubCategory === category.id ? (
+                          <form onSubmit={handleSubCategoryUpdate} className="flex items-center gap-1">
+                            <input
+                              type="text"
+                              value={editingSubCategoryName}
+                              onChange={(e) => setEditingSubCategoryName(e.target.value)}
+                              className="px-2 py-1 border border-gray-300 rounded text-sm text-black bg-white"
+                              autoFocus
+                              required
+                            />
+                            <button
+                              type="submit"
+                              disabled={isAddingCategory}
+                              className="text-green-600 hover:text-green-800 text-xs"
+                              title="저장"
+                            >
+                              ✓
+                            </button>
+                            <button
+                              type="button"
+                              onClick={handleSubCategoryEditCancel}
+                              className="text-gray-600 hover:text-gray-800 text-xs"
+                              title="취소"
+                            >
+                              ×
+                            </button>
+                          </form>
+                        ) : (
+                          <>
+                            <span className="text-sm text-black">{category.name}</span>
+                            <button
+                              onClick={() => handleSubCategoryEdit(category)}
+                              className="text-blue-600 hover:text-blue-800 text-xs"
+                              title="소분류 수정"
+                            >
+                              ✎
+                            </button>
+                            <button
+                              onClick={() => handleCategoryDelete(category.id)}
+                              className="text-red-600 hover:text-red-800 text-xs"
+                              title="삭제"
+                            >
+                              ×
+                            </button>
+                          </>
+                        )}
                       </div>
                     ))}
                   </div>

@@ -126,6 +126,83 @@ export async function deleteCategory(id: string) {
   if (error) throw error;
 }
 
+export async function updateCategory(id: string, category: CategoryFormData) {
+  const { data, error } = await supabase
+    .from('categories')
+    .update(category)
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data as Category;
+}
+
+// 대분류 이름 변경 (해당 유형의 모든 카테고리와 거래 업데이트)
+export async function updateMainCategory(
+  type: string,
+  oldMainCategory: string,
+  newMainCategory: string
+) {
+  // categories 테이블의 main_category 업데이트
+  const { error: categoryError } = await supabase
+    .from('categories')
+    .update({ main_category: newMainCategory })
+    .eq('type', type)
+    .eq('main_category', oldMainCategory);
+
+  if (categoryError) throw categoryError;
+
+  // transactions 테이블의 main_category 업데이트
+  const { error: transactionError } = await supabase
+    .from('transactions')
+    .update({ main_category: newMainCategory })
+    .eq('type', type)
+    .eq('main_category', oldMainCategory);
+
+  if (transactionError) throw transactionError;
+
+  return { success: true };
+}
+
+// 소분류 이름 변경 (해당 카테고리와 거래 업데이트)
+export async function updateSubCategory(
+  id: string,
+  newName: string
+) {
+  // 카테고리 정보 가져오기
+  const { data: category, error: fetchError } = await supabase
+    .from('categories')
+    .select('*')
+    .eq('id', id)
+    .single();
+
+  if (fetchError) throw fetchError;
+  if (!category) throw new Error('Category not found');
+
+  const oldName = category.name;
+  const { type, main_category } = category;
+
+  // categories 테이블의 name 업데이트
+  const { error: categoryError } = await supabase
+    .from('categories')
+    .update({ name: newName })
+    .eq('id', id);
+
+  if (categoryError) throw categoryError;
+
+  // transactions 테이블의 category 업데이트
+  const { error: transactionError } = await supabase
+    .from('transactions')
+    .update({ category: newName })
+    .eq('type', type)
+    .eq('category', oldName);
+
+  if (transactionError) throw transactionError;
+
+  return { success: true };
+}
+
 // 유형 관련 함수
 export async function getTransactionTypes() {
   const { data, error } = await supabase
