@@ -19,3 +19,11 @@ export function parseAmountInput(value: string): number {
 export function extractNumbers(value: string): string {
   return value.replace(/[^\d.]/g, '');
 }
+
+// 금액을 원화 형식으로 포맷팅 (₩ 기호 포함)
+export function formatAmount(amount: number): string {
+  return new Intl.NumberFormat('ko-KR', {
+    style: 'currency',
+    currency: 'KRW',
+  }).format(amount);
+}
