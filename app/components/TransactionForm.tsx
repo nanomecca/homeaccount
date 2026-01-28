@@ -1,13 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { TransactionType, TransactionFormData } from '@/types/transaction';
-import { addTransaction } from '@/lib/db';
-
-const categories = {
-  income: ['급여', '용돈', '부수입', '기타 수입'],
-  expense: ['식비', '교통비', '쇼핑', '의료비', '통신비', '교육비', '기타 지출'],
-};
+import { addTransaction, getCategories } from '@/lib/db';
+import { Category } from '@/types/category';
 
 export default function TransactionForm({ onSuccess }: { onSuccess: () => void }) {
   const [formData, setFormData] = useState<TransactionFormData>({
@@ -18,6 +14,24 @@ export default function TransactionForm({ onSuccess }: { onSuccess: () => void }
     date: new Date().toISOString().split('T')[0],
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [categories, setCategories] = useState<Category[]>([]);
+
+  useEffect(() => {
+    loadCategories();
+  }, []);
+
+  const loadCategories = async () => {
+    try {
+      const data = await getCategories();
+      setCategories(data);
+    } catch (error) {
+      console.error('카테고리 로드 실패:', error);
+    }
+  };
+
+  const getCategoriesByType = (type: TransactionType) => {
+    return categories.filter((cat) => cat.type === type);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,7 +55,7 @@ export default function TransactionForm({ onSuccess }: { onSuccess: () => void }
     }
   };
 
-  const currentCategories = categories[formData.type];
+  const currentCategories = getCategoriesByType(formData.type);
 
   return (
     <form onSubmit={handleSubmit} className="bg-white p-6 rounded-lg shadow-md mb-6">
@@ -87,8 +101,8 @@ export default function TransactionForm({ onSuccess }: { onSuccess: () => void }
           >
             <option value="">선택하세요</option>
             {currentCategories.map((cat) => (
-              <option key={cat} value={cat}>
-                {cat}
+              <option key={cat.id} value={cat.name}>
+                {cat.name}
               </option>
             ))}
           </select>

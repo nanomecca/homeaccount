@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import TransactionForm from './components/TransactionForm';
+import BulkTransactionForm from './components/BulkTransactionForm';
+import CategoryManager from './components/CategoryManager';
 import TransactionList from './components/TransactionList';
 import DateFilter from './components/DateFilter';
 import { getTransactions, getTransactionsByDateRange } from '@/lib/db';
@@ -12,6 +14,7 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(true);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
+  const [activeTab, setActiveTab] = useState<'single' | 'bulk' | 'category'>('single');
 
   const loadTransactions = async () => {
     setIsLoading(true);
@@ -35,12 +38,62 @@ export default function Home() {
     loadTransactions();
   }, [startDate, endDate]);
 
+  const handleCategoryChange = () => {
+    // 카테고리가 변경되면 폼을 다시 렌더링하기 위해 상태 업데이트
+    loadTransactions();
+  };
+
   return (
     <main className="min-h-screen bg-gray-100 p-4 md:p-8">
       <div className="max-w-6xl mx-auto">
         <h1 className="text-4xl font-bold mb-8 text-gray-800">가계부</h1>
         
-        <TransactionForm onSuccess={loadTransactions} />
+        {/* 탭 메뉴 */}
+        <div className="mb-6 border-b border-gray-200">
+          <nav className="flex space-x-4">
+            <button
+              onClick={() => setActiveTab('single')}
+              className={`py-2 px-4 border-b-2 font-medium text-sm ${
+                activeTab === 'single'
+                  ? 'border-blue-600 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              단일 입력
+            </button>
+            <button
+              onClick={() => setActiveTab('bulk')}
+              className={`py-2 px-4 border-b-2 font-medium text-sm ${
+                activeTab === 'bulk'
+                  ? 'border-blue-600 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              일괄 입력
+            </button>
+            <button
+              onClick={() => setActiveTab('category')}
+              className={`py-2 px-4 border-b-2 font-medium text-sm ${
+                activeTab === 'category'
+                  ? 'border-blue-600 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              카테고리 관리
+            </button>
+          </nav>
+        </div>
+
+        {/* 탭 컨텐츠 */}
+        {activeTab === 'single' && (
+          <TransactionForm onSuccess={loadTransactions} />
+        )}
+        {activeTab === 'bulk' && (
+          <BulkTransactionForm onSuccess={loadTransactions} />
+        )}
+        {activeTab === 'category' && (
+          <CategoryManager onCategoryChange={handleCategoryChange} />
+        )}
         
         <DateFilter
           startDate={startDate}
