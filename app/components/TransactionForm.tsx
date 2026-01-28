@@ -34,8 +34,8 @@ export default function TransactionForm({ onSuccess }: { onSuccess: () => void }
       setCategories(categoriesData);
       setTypes(typesData);
       if (typesData.length > 0 && !formData.type) {
-        // 'expense' (지출)를 기본값으로 설정, 없으면 첫 번째 유형 사용
-        const defaultType = typesData.find(t => t.name === 'expense') || typesData[0];
+        // '지출'을 기본값으로 설정, 없으면 첫 번째 유형 사용
+        const defaultType = typesData.find(t => t.name === '지출') || typesData[0];
         setFormData({ ...formData, type: defaultType.name });
       }
     } catch (error) {
@@ -75,8 +75,8 @@ export default function TransactionForm({ onSuccess }: { onSuccess: () => void }
         ...formData,
         main_category: mainCategory,
       });
-      // 'expense' (지출)를 기본값으로 설정, 없으면 첫 번째 유형 사용
-      const defaultType = types.find(t => t.name === 'expense') || (types.length > 0 ? types[0] : null);
+      // '지출'을 기본값으로 설정, 없으면 첫 번째 유형 사용
+      const defaultType = types.find(t => t.name === '지출') || (types.length > 0 ? types[0] : null);
       setFormData({
         type: defaultType ? defaultType.name : '',
         amount: 0,
@@ -116,7 +116,7 @@ export default function TransactionForm({ onSuccess }: { onSuccess: () => void }
             <option value="" className="text-gray-500">선택하세요</option>
             {types.map((type) => (
               <option key={type.id} value={type.name} className="text-gray-900">
-                {type.display_name}
+                {type.name}
               </option>
             ))}
           </select>

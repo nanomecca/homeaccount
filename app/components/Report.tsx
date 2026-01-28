@@ -55,6 +55,12 @@ export default function Report() {
     }).format(amount);
   };
 
+  // 수입/지출 유형 동적으로 찾기
+  const incomeType = types.find(t => t.name === '수입' || t.name === 'income');
+  const expenseType = types.find(t => t.name === '지출' || t.name === 'expense');
+  const incomeTypeName = incomeType?.name || '수입';
+  const expenseTypeName = expenseType?.name || '지출';
+
   // 월간 리포트 데이터
   const getMonthlyData = () => {
     const monthlyTransactions = transactions.filter((t) => {
@@ -74,10 +80,10 @@ export default function Report() {
       return acc;
     }, {} as Record<string, number>);
     
-    const totalIncome = byType['income'] || 0;
-    const totalExpense = byType['expense'] || 0;
+    const totalIncome = byType[incomeTypeName] || byType['income'] || 0;
+    const totalExpense = byType[expenseTypeName] || byType['expense'] || 0;
     const totalOther = Object.entries(byType)
-      .filter(([type]) => type !== 'income' && type !== 'expense')
+      .filter(([type]) => type !== incomeTypeName && type !== 'income' && type !== expenseTypeName && type !== 'expense')
       .reduce((sum, [, amount]) => sum + amount, 0);
 
     // 모든 유형별 데이터 (세로 막대 그래프용)
@@ -85,7 +91,7 @@ export default function Report() {
       .map(([type, value]) => {
         const typeInfo = types.find(t => t.name === type);
         return {
-          name: typeInfo ? typeInfo.display_name : type,
+          name: typeInfo ? typeInfo.name : type,
           value,
           type: type,
         };
@@ -93,11 +99,11 @@ export default function Report() {
       .sort((a, b) => b.value - a.value);
 
     // 지출 카테고리별 데이터
-    const expenseTransactions = monthlyTransactions.filter((t) => t.type === 'expense');
+    const expenseTransactions = monthlyTransactions.filter((t) => t.type === expenseTypeName || t.type === 'expense');
     
     // 대분류별 데이터
     const expenseByMainCategory = expenseTransactions.reduce((acc, t) => {
-      const categoryInfo = categories.find(c => c.type === 'expense' && c.name === t.category);
+      const categoryInfo = categories.find(c => (c.type === expenseTypeName || c.type === 'expense') && c.name === t.category);
       const mainCat = categoryInfo?.main_category || '';
       if (mainCat) {
         if (!acc[mainCat]) {
@@ -110,7 +116,7 @@ export default function Report() {
 
     // 소분류별 데이터
     const expenseBySubCategory = expenseTransactions.reduce((acc, t) => {
-      const categoryInfo = categories.find(c => c.type === 'expense' && c.name === t.category);
+      const categoryInfo = categories.find(c => (c.type === expenseTypeName || c.type === 'expense') && c.name === t.category);
       const mainCat = categoryInfo?.main_category || '';
       if (!acc[t.category]) {
         acc[t.category] = { value: 0, mainCategory: mainCat };
@@ -175,10 +181,10 @@ export default function Report() {
       return acc;
     }, {} as Record<string, number>);
 
-    const totalIncome = byType['income'] || 0;
-    const totalExpense = byType['expense'] || 0;
+    const totalIncome = byType[incomeTypeName] || byType['income'] || 0;
+    const totalExpense = byType[expenseTypeName] || byType['expense'] || 0;
     const totalOther = Object.entries(byType)
-      .filter(([type]) => type !== 'income' && type !== 'expense')
+      .filter(([type]) => type !== incomeTypeName && type !== 'income' && type !== expenseTypeName && type !== 'expense')
       .reduce((sum, [, amount]) => sum + amount, 0);
 
     // 유형별 데이터 (세로 막대 그래프용)
@@ -186,7 +192,7 @@ export default function Report() {
       .map(([type, value]) => {
         const typeInfo = types.find(t => t.name === type);
         return {
-          name: typeInfo ? typeInfo.display_name : type,
+          name: typeInfo ? typeInfo.name : type,
           value,
           type: type,
         };
@@ -200,9 +206,9 @@ export default function Report() {
       if (!acc[monthKey]) {
         acc[monthKey] = { income: 0, expense: 0, other: 0 };
       }
-      if (t.type === 'income') {
+      if (t.type === incomeTypeName || t.type === 'income') {
         acc[monthKey].income += Number(t.amount);
-      } else if (t.type === 'expense') {
+      } else if (t.type === expenseTypeName || t.type === 'expense') {
         acc[monthKey].expense += Number(t.amount);
       } else {
         acc[monthKey].other += Number(t.amount);
@@ -223,11 +229,11 @@ export default function Report() {
     });
 
     // 지출 카테고리별 데이터
-    const expenseTransactions = annualTransactions.filter((t) => t.type === 'expense');
+    const expenseTransactions = annualTransactions.filter((t) => t.type === expenseTypeName || t.type === 'expense');
     
     // 대분류별 데이터
     const expenseByMainCategory = expenseTransactions.reduce((acc, t) => {
-      const categoryInfo = categories.find(c => c.type === 'expense' && c.name === t.category);
+      const categoryInfo = categories.find(c => (c.type === expenseTypeName || c.type === 'expense') && c.name === t.category);
       const mainCat = categoryInfo?.main_category || '';
       if (mainCat) {
         if (!acc[mainCat]) {
@@ -240,7 +246,7 @@ export default function Report() {
 
     // 소분류별 데이터
     const expenseBySubCategory = expenseTransactions.reduce((acc, t) => {
-      const categoryInfo = categories.find(c => c.type === 'expense' && c.name === t.category);
+      const categoryInfo = categories.find(c => (c.type === expenseTypeName || c.type === 'expense') && c.name === t.category);
       const mainCat = categoryInfo?.main_category || '';
       if (!acc[t.category]) {
         acc[t.category] = { value: 0, mainCategory: mainCat };
@@ -310,7 +316,7 @@ export default function Report() {
   // 유형 표시 이름 가져오기
   const getTypeDisplayName = (typeName: string) => {
     const type = types.find(t => t.name === typeName);
-    return type ? type.display_name : typeName;
+    return type ? type.name : typeName;
   };
 
   // 엑셀 다운로드 함수

@@ -35,7 +35,6 @@ DROP TABLE IF EXISTS transaction_types CASCADE;
 CREATE TABLE transaction_types (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   name TEXT NOT NULL UNIQUE,
-  display_name TEXT NOT NULL,
   color TEXT DEFAULT '#3B82F6',
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -68,24 +67,24 @@ CREATE INDEX idx_transactions_type ON transactions(type);
 CREATE INDEX idx_transactions_created_at ON transactions(created_at DESC);
 
 -- 기본 유형 데이터 삽입
-INSERT INTO transaction_types (name, display_name, color) VALUES
-  ('income', '수입', '#10B981'),
-  ('expense', '지출', '#EF4444')
+INSERT INTO transaction_types (name, color) VALUES
+  ('수입', '#10B981'),
+  ('지출', '#EF4444')
 ON CONFLICT (name) DO NOTHING;
 
 -- 기본 카테고리 데이터 삽입
 INSERT INTO categories (type, name) VALUES
-  ('income', '급여'),
-  ('income', '용돈'),
-  ('income', '부수입'),
-  ('income', '기타 수입'),
-  ('expense', '식비'),
-  ('expense', '교통비'),
-  ('expense', '쇼핑'),
-  ('expense', '의료비'),
-  ('expense', '통신비'),
-  ('expense', '교육비'),
-  ('expense', '기타 지출')
+  ('수입', '급여'),
+  ('수입', '용돈'),
+  ('수입', '부수입'),
+  ('수입', '기타 수입'),
+  ('지출', '식비'),
+  ('지출', '교통비'),
+  ('지출', '쇼핑'),
+  ('지출', '의료비'),
+  ('지출', '통신비'),
+  ('지출', '교육비'),
+  ('지출', '기타 지출')
 ON CONFLICT (type, name) DO NOTHING;
 
 -- Row Level Security (RLS) 활성화

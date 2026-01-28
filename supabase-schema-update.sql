@@ -5,15 +5,14 @@
 CREATE TABLE IF NOT EXISTS transaction_types (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   name TEXT NOT NULL UNIQUE,
-  display_name TEXT NOT NULL,
   color TEXT DEFAULT '#3B82F6',
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 -- 기본 유형 데이터 삽입
-INSERT INTO transaction_types (name, display_name, color) VALUES
-  ('income', '수입', '#10B981'),
-  ('expense', '지출', '#EF4444')
+INSERT INTO transaction_types (name, color) VALUES
+  ('수입', '#10B981'),
+  ('지출', '#EF4444')
 ON CONFLICT (name) DO NOTHING;
 
 -- transactions 테이블의 CHECK 제약조건 제거 (동적 유형 지원)

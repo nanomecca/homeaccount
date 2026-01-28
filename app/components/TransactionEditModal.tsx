@@ -133,7 +133,7 @@ export default function TransactionEditModal({ transaction, onClose, onSuccess }
                 <option value="" className="text-gray-500">선택하세요</option>
                 {types.map((type) => (
                   <option key={type.id} value={type.name} className="text-gray-900">
-                    {type.display_name}
+                    {type.name}
                   </option>
                 ))}
               </select>

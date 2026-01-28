@@ -44,7 +44,7 @@ export default function TransactionList({ transactions, onDelete }: TransactionL
 
   const getTypeDisplay = (typeName: string) => {
     const type = types.find(t => t.name === typeName);
-    return type ? type.display_name : typeName;
+    return type ? type.name : typeName;
   };
 
   const getTypeColor = (typeName: string) => {
@@ -149,12 +149,18 @@ export default function TransactionList({ transactions, onDelete }: TransactionL
     }).format(amount);
   };
 
+  // 수입/지출 유형 동적으로 찾기
+  const incomeType = types.find(t => t.name === '수입' || t.name === 'income');
+  const expenseType = types.find(t => t.name === '지출' || t.name === 'expense');
+  const incomeTypeName = incomeType?.name || '수입';
+  const expenseTypeName = expenseType?.name || '지출';
+
   const totalIncome = filteredTransactions
-    .filter((t) => t.type === 'income')
+    .filter((t) => t.type === incomeTypeName || t.type === 'income')
     .reduce((sum, t) => sum + Number(t.amount), 0);
 
   const totalExpense = filteredTransactions
-    .filter((t) => t.type === 'expense')
+    .filter((t) => t.type === expenseTypeName || t.type === 'expense')
     .reduce((sum, t) => sum + Number(t.amount), 0);
 
   const balance = totalIncome - totalExpense;
@@ -199,7 +205,7 @@ export default function TransactionList({ transactions, onDelete }: TransactionL
               <option value="">전체</option>
               {types.map((type) => (
                 <option key={type.id} value={type.name}>
-                  {type.display_name}
+                  {type.name}
                 </option>
               ))}
             </select>
@@ -335,10 +341,10 @@ export default function TransactionList({ transactions, onDelete }: TransactionL
                     <td className="p-2 text-black">{transaction.description || '-'}</td>
                     <td
                       className={`p-2 text-right font-semibold ${
-                        transaction.type === 'income' ? 'text-green-600' : 'text-red-600'
+                        transaction.type === incomeTypeName || transaction.type === 'income' ? 'text-green-600' : 'text-red-600'
                       }`}
                     >
-                      {transaction.type === 'income' ? '+' : '-'}
+                      {transaction.type === incomeTypeName || transaction.type === 'income' ? '+' : '-'}
                       {formatAmount(Number(transaction.amount))}
                     </td>
                     <td className="p-2 text-center">

@@ -30,8 +30,8 @@ export default function BulkTransactionForm({ onSuccess }: { onSuccess: () => vo
 
   useEffect(() => {
     if (types.length > 0 && rows.length === 0) {
-      // 'expense' (지출)를 기본값으로 설정, 없으면 첫 번째 유형 사용
-      const defaultType = types.find(t => t.name === 'expense') || types[0];
+      // '지출'을 기본값으로 설정, 없으면 첫 번째 유형 사용
+      const defaultType = types.find(t => t.name === '지출') || types[0];
       setRows([
         {
           id: '1',
@@ -60,8 +60,8 @@ export default function BulkTransactionForm({ onSuccess }: { onSuccess: () => vo
   };
 
   const addRow = () => {
-    // 'expense' (지출)를 기본값으로 설정, 없으면 첫 번째 유형 사용
-    const defaultType = types.find(t => t.name === 'expense') || (types.length > 0 ? types[0] : null);
+    // '지출'을 기본값으로 설정, 없으면 첫 번째 유형 사용
+    const defaultType = types.find(t => t.name === '지출') || (types.length > 0 ? types[0] : null);
     setRows([
       ...rows,
       {
@@ -142,12 +142,12 @@ export default function BulkTransactionForm({ onSuccess }: { onSuccess: () => vo
       });
 
       await addTransactions(transactions);
-      // 'expense' (지출)를 기본값으로 설정, 없으면 첫 번째 유형 사용
-      const defaultType = types.find(t => t.name === 'expense') || (types.length > 0 ? types[0] : null);
+      // '지출'을 기본값으로 설정, 없으면 첫 번째 유형 사용
+      const defaultType = types.find(t => t.name === '지출') || (types.length > 0 ? types[0] : null);
       setRows([
         {
           id: '1',
-          type: defaultType ? defaultType.name : 'expense',
+          type: defaultType ? defaultType.name : '',
           mainCategory: '',
           amount: '',
           category: '',
@@ -234,7 +234,7 @@ export default function BulkTransactionForm({ onSuccess }: { onSuccess: () => vo
                       <option value="" className="text-gray-500">선택</option>
                       {types.map((type) => (
                         <option key={type.id} value={type.name} className="text-gray-900">
-                          {type.display_name}
+                          {type.name}
                         </option>
                       ))}
                     </select>

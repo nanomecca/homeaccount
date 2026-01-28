@@ -131,7 +131,7 @@ export async function getTransactionTypes() {
   const { data, error } = await supabase
     .from('transaction_types')
     .select('*')
-    .order('display_name', { ascending: true });
+    .order('name', { ascending: true });
 
   if (error) throw error;
   return data as TransactionType[];

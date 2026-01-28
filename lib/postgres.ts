@@ -185,7 +185,7 @@ export async function getTransactionTypes(): Promise<TransactionType[]> {
   const client = await getPool().connect();
   try {
     const result = await client.query(
-      'SELECT * FROM transaction_types ORDER BY display_name ASC'
+      'SELECT * FROM transaction_types ORDER BY name ASC'
     );
     return result.rows as TransactionType[];
   } finally {
@@ -197,10 +197,10 @@ export async function addTransactionType(type: TransactionTypeFormData): Promise
   const client = await getPool().connect();
   try {
     const result = await client.query(
-      `INSERT INTO transaction_types (name, display_name, color)
-       VALUES ($1, $2, $3)
+      `INSERT INTO transaction_types (name, color)
+       VALUES ($1, $2)
        RETURNING *`,
-      [type.name, type.display_name, type.color || null]
+      [type.name, type.color || null]
     );
     return result.rows[0] as TransactionType;
   } finally {
@@ -213,10 +213,10 @@ export async function updateTransactionType(id: string, type: TransactionTypeFor
   try {
     const result = await client.query(
       `UPDATE transaction_types 
-       SET name = $1, display_name = $2, color = $3
-       WHERE id = $4
+       SET name = $1, color = $2
+       WHERE id = $3
        RETURNING *`,
-      [type.name, type.display_name, type.color || null, id]
+      [type.name, type.color || null, id]
     );
     return result.rows[0] as TransactionType;
   } finally {

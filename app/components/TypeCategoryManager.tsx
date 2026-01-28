@@ -22,7 +22,6 @@ export default function TypeCategoryManager({ onChange }: { onChange: () => void
   const [editingType, setEditingType] = useState<TransactionType | null>(null);
   const [typeFormData, setTypeFormData] = useState<TransactionTypeFormData>({
     name: '',
-    display_name: '',
     color: '#3B82F6',
   });
   const [isSubmittingType, setIsSubmittingType] = useState(false);
@@ -61,7 +60,7 @@ export default function TypeCategoryManager({ onChange }: { onChange: () => void
   // 유형 관리 함수들
   const handleTypeSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!typeFormData.name.trim() || !typeFormData.display_name.trim()) return;
+    if (!typeFormData.name.trim()) return;
 
     setIsSubmittingType(true);
     try {
@@ -70,7 +69,7 @@ export default function TypeCategoryManager({ onChange }: { onChange: () => void
       } else {
         await addTransactionType(typeFormData);
       }
-      setTypeFormData({ name: '', display_name: '', color: '#3B82F6' });
+      setTypeFormData({ name: '', color: '#3B82F6' });
       setEditingType(null);
       await loadData();
       onChange();
@@ -90,14 +89,13 @@ export default function TypeCategoryManager({ onChange }: { onChange: () => void
     setEditingType(type);
     setTypeFormData({
       name: type.name,
-      display_name: type.display_name,
       color: type.color || '#3B82F6',
     });
   };
 
   const handleTypeCancel = () => {
     setEditingType(null);
-    setTypeFormData({ name: '', display_name: '', color: '#3B82F6' });
+    setTypeFormData({ name: '', color: '#3B82F6' });
   };
 
   const handleTypeDelete = async (id: string) => {
@@ -233,25 +231,13 @@ export default function TypeCategoryManager({ onChange }: { onChange: () => void
         <h2 className="text-xl font-bold mb-4 text-black">유형 관리</h2>
         
         <form onSubmit={handleTypeSubmit} className="mb-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium mb-2 text-black">유형 코드 (영문)</label>
+              <label className="block text-sm font-medium mb-2 text-black">유형이름</label>
               <input
                 type="text"
                 value={typeFormData.name}
-                onChange={(e) => setTypeFormData({ ...typeFormData, name: e.target.value.toLowerCase().replace(/\s+/g, '_') })}
-                className="w-full p-2 border border-gray-300 rounded-md text-black bg-white placeholder:text-gray-400"
-                placeholder="예: expense"
-                required
-                disabled={!!editingType}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-2 text-black">표시 이름</label>
-              <input
-                type="text"
-                value={typeFormData.display_name}
-                onChange={(e) => setTypeFormData({ ...typeFormData, display_name: e.target.value })}
+                onChange={(e) => setTypeFormData({ ...typeFormData, name: e.target.value })}
                 className="w-full p-2 border border-gray-300 rounded-md text-black bg-white placeholder:text-gray-400"
                 placeholder="예: 지출"
                 required
@@ -313,8 +299,7 @@ export default function TypeCategoryManager({ onChange }: { onChange: () => void
                       style={{ backgroundColor: type.color || '#3B82F6' }}
                     />
                     <div>
-                      <span className="font-medium text-black">{type.display_name}</span>
-                      <span className="text-sm text-gray-500 ml-2">({type.name})</span>
+                      <span className="font-medium text-black">{type.name}</span>
                     </div>
                   </div>
                   <div className="flex gap-2">
@@ -355,7 +340,7 @@ export default function TypeCategoryManager({ onChange }: { onChange: () => void
             <option value="" className="text-gray-500">선택하세요</option>
             {types.map((type) => (
               <option key={type.id} value={type.name} className="text-black">
-                {type.display_name}
+                {type.name}
               </option>
             ))}
           </select>
