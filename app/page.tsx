@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import TransactionForm from './components/TransactionForm';
 import BulkTransactionForm from './components/BulkTransactionForm';
 import CategoryManager from './components/CategoryManager';
+import TypeManager from './components/TypeManager';
 import TransactionList from './components/TransactionList';
 import DateFilter from './components/DateFilter';
 import Report from './components/Report';
@@ -15,7 +16,7 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(true);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
-  const [activeTab, setActiveTab] = useState<'single' | 'bulk' | 'category' | 'report'>('single');
+  const [activeTab, setActiveTab] = useState<'single' | 'bulk' | 'category' | 'type' | 'report'>('single');
 
   const loadTransactions = async () => {
     setIsLoading(true);
@@ -83,6 +84,16 @@ export default function Home() {
               카테고리 관리
             </button>
             <button
+              onClick={() => setActiveTab('type')}
+              className={`py-2 px-4 border-b-2 font-medium text-sm ${
+                activeTab === 'type'
+                  ? 'border-blue-600 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              유형 관리
+            </button>
+            <button
               onClick={() => setActiveTab('report')}
               className={`py-2 px-4 border-b-2 font-medium text-sm ${
                 activeTab === 'report'
@@ -104,6 +115,9 @@ export default function Home() {
         )}
         {activeTab === 'category' && (
           <CategoryManager onCategoryChange={handleCategoryChange} />
+        )}
+        {activeTab === 'type' && (
+          <TypeManager onTypeChange={handleCategoryChange} />
         )}
         {activeTab === 'report' && (
           <Report />

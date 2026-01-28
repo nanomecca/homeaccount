@@ -2,13 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import { TransactionFormData } from '@/types/transaction';
-import { TransactionType } from '@/types/transaction';
-import { addTransactions, getCategories } from '@/lib/db-client';
+import { addTransactions, getCategories, getTransactionTypes } from '@/lib/db-client';
 import { Category } from '@/types/category';
+import { TransactionType } from '@/types/transaction-type';
 
 interface BulkRow {
   id: string;
-  type: TransactionType;
+  type: string;
   amount: string;
   category: string;
   description: string;
@@ -16,29 +16,40 @@ interface BulkRow {
 }
 
 export default function BulkTransactionForm({ onSuccess }: { onSuccess: () => void }) {
-  const [rows, setRows] = useState<BulkRow[]>([
-    {
-      id: '1',
-      type: 'expense',
-      amount: '',
-      category: '',
-      description: '',
-      date: new Date().toISOString().split('T')[0],
-    },
-  ]);
+  const [rows, setRows] = useState<BulkRow[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [types, setTypes] = useState<TransactionType[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    loadCategories();
+    loadData();
   }, []);
 
-  const loadCategories = async () => {
+  useEffect(() => {
+    if (types.length > 0 && rows.length === 0) {
+      setRows([
+        {
+          id: '1',
+          type: types[0].name,
+          amount: '',
+          category: '',
+          description: '',
+          date: new Date().toISOString().split('T')[0],
+        },
+      ]);
+    }
+  }, [types]);
+
+  const loadData = async () => {
     try {
-      const data = await getCategories();
-      setCategories(data);
+      const [categoriesData, typesData] = await Promise.all([
+        getCategories(),
+        getTransactionTypes(),
+      ]);
+      setCategories(categoriesData);
+      setTypes(typesData);
     } catch (error) {
-      console.error('카테고리 로드 실패:', error);
+      console.error('데이터 로드 실패:', error);
     }
   };
 
@@ -47,7 +58,7 @@ export default function BulkTransactionForm({ onSuccess }: { onSuccess: () => vo
       ...rows,
       {
         id: Date.now().toString(),
-        type: 'expense',
+        type: types.length > 0 ? types[0].name : '',
         amount: '',
         category: '',
         description: '',
@@ -121,7 +132,7 @@ export default function BulkTransactionForm({ onSuccess }: { onSuccess: () => vo
     }
   };
 
-  const getCategoriesByType = (type: TransactionType) => {
+  const getCategoriesByType = (type: string) => {
     return categories.filter((cat) => cat.type === type);
   };
 
@@ -159,15 +170,18 @@ export default function BulkTransactionForm({ onSuccess }: { onSuccess: () => vo
                     <select
                       value={row.type}
                       onChange={(e) => {
-                        const newType = e.target.value as TransactionType;
-                        updateRow(row.id, 'type', newType);
+                        updateRow(row.id, 'type', e.target.value);
                         updateRow(row.id, 'category', '');
                       }}
                       className="w-full p-1 text-sm border border-gray-300 rounded"
                       required
                     >
-                      <option value="expense">지출</option>
-                      <option value="income">수입</option>
+                      <option value="">선택</option>
+                      {types.map((type) => (
+                        <option key={type.id} value={type.name}>
+                          {type.display_name}
+                        </option>
+                      ))}
                     </select>
                   </td>
                   <td className="border p-1">

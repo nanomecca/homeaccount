@@ -1,13 +1,14 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { TransactionType, TransactionFormData } from '@/types/transaction';
-import { addTransaction, getCategories } from '@/lib/db-client';
+import { TransactionFormData } from '@/types/transaction';
+import { addTransaction, getCategories, getTransactionTypes } from '@/lib/db-client';
 import { Category } from '@/types/category';
+import { TransactionType } from '@/types/transaction-type';
 
 export default function TransactionForm({ onSuccess }: { onSuccess: () => void }) {
   const [formData, setFormData] = useState<TransactionFormData>({
-    type: 'expense',
+    type: '',
     amount: 0,
     category: '',
     description: '',
@@ -15,21 +16,29 @@ export default function TransactionForm({ onSuccess }: { onSuccess: () => void }
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [types, setTypes] = useState<TransactionType[]>([]);
 
   useEffect(() => {
-    loadCategories();
+    loadData();
   }, []);
 
-  const loadCategories = async () => {
+  const loadData = async () => {
     try {
-      const data = await getCategories();
-      setCategories(data);
+      const [categoriesData, typesData] = await Promise.all([
+        getCategories(),
+        getTransactionTypes(),
+      ]);
+      setCategories(categoriesData);
+      setTypes(typesData);
+      if (typesData.length > 0 && !formData.type) {
+        setFormData({ ...formData, type: typesData[0].name });
+      }
     } catch (error) {
-      console.error('카테고리 로드 실패:', error);
+      console.error('데이터 로드 실패:', error);
     }
   };
 
-  const getCategoriesByType = (type: TransactionType) => {
+  const getCategoriesByType = (type: string) => {
     return categories.filter((cat) => cat.type === type);
   };
 
@@ -40,7 +49,7 @@ export default function TransactionForm({ onSuccess }: { onSuccess: () => void }
     try {
       await addTransaction(formData);
       setFormData({
-        type: 'expense',
+        type: types.length > 0 ? types[0].name : '',
         amount: 0,
         category: '',
         description: '',
@@ -67,14 +76,17 @@ export default function TransactionForm({ onSuccess }: { onSuccess: () => void }
           <select
             value={formData.type}
             onChange={(e) => {
-              const newType = e.target.value as TransactionType;
-              setFormData({ ...formData, type: newType, category: '' });
+              setFormData({ ...formData, type: e.target.value, category: '' });
             }}
             className="w-full p-2 border border-gray-300 rounded-md"
             required
           >
-            <option value="expense">지출</option>
-            <option value="income">수입</option>
+            <option value="">선택하세요</option>
+            {types.map((type) => (
+              <option key={type.id} value={type.name}>
+                {type.display_name}
+              </option>
+            ))}
           </select>
         </div>
 

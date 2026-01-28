@@ -2,6 +2,7 @@
 // 로컬 PostgreSQL을 사용할 때는 API 라우트를 통해 접근
 import { Transaction, TransactionFormData } from '@/types/transaction';
 import { Category, CategoryFormData } from '@/types/category';
+import { TransactionType, TransactionTypeFormData } from '@/types/transaction-type';
 
 const USE_LOCAL_POSTGRES = process.env.NEXT_PUBLIC_USE_LOCAL_POSTGRES === 'true';
 const API_BASE = '/api';
@@ -85,7 +86,7 @@ export async function getTransactionsByDateRange(startDate: string, endDate: str
 }
 
 // Categories
-export async function getCategories(type?: 'income' | 'expense'): Promise<Category[]> {
+export async function getCategories(type?: string): Promise<Category[]> {
   if (USE_LOCAL_POSTGRES) {
     const url = type ? `/categories?type=${encodeURIComponent(type)}` : '/categories';
     return apiRequest<Category[]>(url);
@@ -111,4 +112,42 @@ export async function deleteCategory(id: string): Promise<void> {
     return;
   }
   return supabaseDb.deleteCategory(id);
+}
+
+// Transaction Types
+export async function getTransactionTypes(): Promise<TransactionType[]> {
+  if (USE_LOCAL_POSTGRES) {
+    return apiRequest<TransactionType[]>('/transaction-types');
+  }
+  return supabaseDb.getTransactionTypes();
+}
+
+export async function addTransactionType(type: TransactionTypeFormData): Promise<TransactionType> {
+  if (USE_LOCAL_POSTGRES) {
+    return apiRequest<TransactionType>('/transaction-types', {
+      method: 'POST',
+      body: JSON.stringify(type),
+    });
+  }
+  return supabaseDb.addTransactionType(type);
+}
+
+export async function updateTransactionType(id: string, type: TransactionTypeFormData): Promise<TransactionType> {
+  if (USE_LOCAL_POSTGRES) {
+    return apiRequest<TransactionType>(`/transaction-types?id=${encodeURIComponent(id)}`, {
+      method: 'PUT',
+      body: JSON.stringify(type),
+    });
+  }
+  return supabaseDb.updateTransactionType(id, type);
+}
+
+export async function deleteTransactionType(id: string): Promise<void> {
+  if (USE_LOCAL_POSTGRES) {
+    await apiRequest('/transaction-types?id=' + encodeURIComponent(id), {
+      method: 'DELETE',
+    });
+    return;
+  }
+  return supabaseDb.deleteTransactionType(id);
 }

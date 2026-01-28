@@ -2,27 +2,39 @@
 
 import { useState, useEffect } from 'react';
 import { Category, CategoryFormData } from '@/types/category';
-import { getCategories, addCategory, deleteCategory } from '@/lib/db-client';
-import { TransactionType } from '@/types/transaction';
+import { getCategories, addCategory, deleteCategory, getTransactionTypes } from '@/lib/db-client';
+import { TransactionType } from '@/types/transaction-type';
 
 export default function CategoryManager({ onCategoryChange }: { onCategoryChange: () => void }) {
   const [categories, setCategories] = useState<Category[]>([]);
-  const [selectedType, setSelectedType] = useState<TransactionType>('expense');
+  const [types, setTypes] = useState<TransactionType[]>([]);
+  const [selectedType, setSelectedType] = useState<string>('');
   const [newCategoryName, setNewCategoryName] = useState('');
   const [isAdding, setIsAdding] = useState(false);
 
-  const loadCategories = async () => {
-    try {
-      const data = await getCategories();
-      setCategories(data);
-    } catch (error) {
-      console.error('카테고리 로드 실패:', error);
-    }
-  };
 
   useEffect(() => {
-    loadCategories();
+    loadData();
   }, []);
+
+  useEffect(() => {
+    if (types.length > 0 && !selectedType) {
+      setSelectedType(types[0].name);
+    }
+  }, [types]);
+
+  const loadData = async () => {
+    try {
+      const [categoriesData, typesData] = await Promise.all([
+        getCategories(),
+        getTransactionTypes(),
+      ]);
+      setCategories(categoriesData);
+      setTypes(typesData);
+    } catch (error) {
+      console.error('데이터 로드 실패:', error);
+    }
+  };
 
   const handleAddCategory = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,7 +47,7 @@ export default function CategoryManager({ onCategoryChange }: { onCategoryChange
         name: newCategoryName.trim(),
       });
       setNewCategoryName('');
-      await loadCategories();
+      await loadData();
       onCategoryChange();
     } catch (error: any) {
       console.error('카테고리 추가 실패:', error);
@@ -54,7 +66,7 @@ export default function CategoryManager({ onCategoryChange }: { onCategoryChange
 
     try {
       await deleteCategory(id);
-      await loadCategories();
+      await loadData();
       onCategoryChange();
     } catch (error) {
       console.error('카테고리 삭제 실패:', error);
@@ -72,11 +84,15 @@ export default function CategoryManager({ onCategoryChange }: { onCategoryChange
         <label className="block text-sm font-medium mb-2">유형 선택</label>
         <select
           value={selectedType}
-          onChange={(e) => setSelectedType(e.target.value as TransactionType)}
+          onChange={(e) => setSelectedType(e.target.value)}
           className="w-full p-2 border border-gray-300 rounded-md"
         >
-          <option value="expense">지출</option>
-          <option value="income">수입</option>
+          <option value="">선택하세요</option>
+          {types.map((type) => (
+            <option key={type.id} value={type.name}>
+              {type.display_name}
+            </option>
+          ))}
         </select>
       </div>
 
@@ -102,7 +118,7 @@ export default function CategoryManager({ onCategoryChange }: { onCategoryChange
 
       <div>
         <h3 className="text-sm font-medium mb-2">
-          {selectedType === 'income' ? '수입' : '지출'} 카테고리 목록
+          {types.find(t => t.name === selectedType)?.display_name || '유형'} 카테고리 목록
         </h3>
         {filteredCategories.length === 0 ? (
           <p className="text-gray-500 text-sm">카테고리가 없습니다.</p>

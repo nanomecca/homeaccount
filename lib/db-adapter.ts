@@ -1,6 +1,7 @@
 // 데이터베이스 어댑터 - Supabase 또는 로컬 PostgreSQL 선택
 import { Transaction, TransactionFormData } from '@/types/transaction';
 import { Category, CategoryFormData } from '@/types/category';
+import { TransactionType, TransactionTypeFormData } from '@/types/transaction-type';
 
 // Supabase 함수들
 import * as supabaseDb from './db';
@@ -53,7 +54,7 @@ export async function getTransactionsByDateRange(startDate: string, endDate: str
 }
 
 // Categories
-export async function getCategories(type?: 'income' | 'expense'): Promise<Category[]> {
+export async function getCategories(type?: string): Promise<Category[]> {
   if (USE_LOCAL_POSTGRES) {
     return postgresDb.getCategories(type);
   }
@@ -72,4 +73,33 @@ export async function deleteCategory(id: string): Promise<void> {
     return postgresDb.deleteCategory(id);
   }
   return supabaseDb.deleteCategory(id);
+}
+
+// Transaction Types
+export async function getTransactionTypes(): Promise<TransactionType[]> {
+  if (USE_LOCAL_POSTGRES) {
+    return postgresDb.getTransactionTypes();
+  }
+  return supabaseDb.getTransactionTypes();
+}
+
+export async function addTransactionType(type: TransactionTypeFormData): Promise<TransactionType> {
+  if (USE_LOCAL_POSTGRES) {
+    return postgresDb.addTransactionType(type);
+  }
+  return supabaseDb.addTransactionType(type);
+}
+
+export async function updateTransactionType(id: string, type: TransactionTypeFormData): Promise<TransactionType> {
+  if (USE_LOCAL_POSTGRES) {
+    return postgresDb.updateTransactionType(id, type);
+  }
+  return supabaseDb.updateTransactionType(id, type);
+}
+
+export async function deleteTransactionType(id: string): Promise<void> {
+  if (USE_LOCAL_POSTGRES) {
+    return postgresDb.deleteTransactionType(id);
+  }
+  return supabaseDb.deleteTransactionType(id);
 }

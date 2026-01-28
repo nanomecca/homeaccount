@@ -61,17 +61,28 @@ export default function Report() {
       );
     });
 
-    const totalIncome = monthlyTransactions
-      .filter((t) => t.type === 'income')
-      .reduce((sum, t) => sum + Number(t.amount), 0);
+    // 유형별 집계
+    const byType = monthlyTransactions.reduce((acc, t) => {
+      if (!acc[t.type]) {
+        acc[t.type] = 0;
+      }
+      acc[t.type] += Number(t.amount);
+      return acc;
+    }, {} as Record<string, number>);
 
-    const totalExpense = monthlyTransactions
-      .filter((t) => t.type === 'expense')
-      .reduce((sum, t) => sum + Number(t.amount), 0);
+    // 첫 번째 유형을 기본으로 사용 (기존 호환성)
+    const firstType = Object.keys(byType)[0] || '';
+    const secondType = Object.keys(byType)[1] || '';
+    
+    const totalIncome = byType['income'] || 0;
+    const totalExpense = byType['expense'] || 0;
+    const totalOther = Object.entries(byType)
+      .filter(([type]) => type !== 'income' && type !== 'expense')
+      .reduce((sum, [, amount]) => sum + amount, 0);
 
-    // 카테고리별 지출 데이터 (원형 그래프용)
-    const expenseByCategory = monthlyTransactions
-      .filter((t) => t.type === 'expense')
+    // 첫 번째 유형의 카테고리별 데이터 (원형 그래프용)
+    const firstTypeByCategory = monthlyTransactions
+      .filter((t) => t.type === firstType)
       .reduce((acc, t) => {
         const category = t.category;
         if (!acc[category]) {
@@ -81,7 +92,7 @@ export default function Report() {
         return acc;
       }, {} as Record<string, number>);
 
-    const pieData = Object.entries(expenseByCategory)
+    const pieData = Object.entries(firstTypeByCategory)
       .map(([name, value]) => ({ name, value }))
       .sort((a, b) => b.value - a.value);
 
@@ -89,8 +100,10 @@ export default function Report() {
       transactions: monthlyTransactions,
       totalIncome,
       totalExpense,
-      balance: totalIncome - totalExpense,
+      totalOther,
+      balance: totalIncome - totalExpense - totalOther,
       pieData,
+      byType,
     };
   };
 
@@ -234,18 +247,22 @@ export default function Report() {
             <>
               {/* 요약 통계 */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                <div className="bg-green-50 p-4 rounded-lg">
-                  <p className="text-sm text-gray-600 mb-1">총 수입</p>
-                  <p className="text-2xl font-bold text-green-600">
-                    {formatAmount(monthlyData.totalIncome)}
-                  </p>
-                </div>
-                <div className="bg-red-50 p-4 rounded-lg">
-                  <p className="text-sm text-gray-600 mb-1">총 지출</p>
-                  <p className="text-2xl font-bold text-red-600">
-                    {formatAmount(monthlyData.totalExpense)}
-                  </p>
-                </div>
+                {monthlyData.totalIncome > 0 && (
+                  <div className="bg-green-50 p-4 rounded-lg">
+                    <p className="text-sm text-gray-600 mb-1">총 수입</p>
+                    <p className="text-2xl font-bold text-green-600">
+                      {formatAmount(monthlyData.totalIncome)}
+                    </p>
+                  </div>
+                )}
+                {monthlyData.totalExpense > 0 && (
+                  <div className="bg-red-50 p-4 rounded-lg">
+                    <p className="text-sm text-gray-600 mb-1">총 지출</p>
+                    <p className="text-2xl font-bold text-red-600">
+                      {formatAmount(monthlyData.totalExpense)}
+                    </p>
+                  </div>
+                )}
                 <div
                   className={`p-4 rounded-lg ${
                     monthlyData.balance >= 0 ? 'bg-blue-50' : 'bg-orange-50'

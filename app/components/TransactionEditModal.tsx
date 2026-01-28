@@ -1,9 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Transaction, TransactionFormData, TransactionType } from '@/types/transaction';
+import { Transaction, TransactionFormData } from '@/types/transaction';
 import { Category } from '@/types/category';
-import { getCategories, updateTransaction } from '@/lib/db-client';
+import { TransactionType } from '@/types/transaction-type';
+import { getCategories, updateTransaction, getTransactionTypes } from '@/lib/db-client';
 
 interface TransactionEditModalProps {
   transaction: Transaction;
@@ -20,18 +21,23 @@ export default function TransactionEditModal({ transaction, onClose, onSuccess }
     date: transaction.date,
   });
   const [categories, setCategories] = useState<Category[]>([]);
+  const [types, setTypes] = useState<TransactionType[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    loadCategories();
+    loadData();
   }, []);
 
-  const loadCategories = async () => {
+  const loadData = async () => {
     try {
-      const data = await getCategories();
-      setCategories(data);
+      const [categoriesData, typesData] = await Promise.all([
+        getCategories(),
+        getTransactionTypes(),
+      ]);
+      setCategories(categoriesData);
+      setTypes(typesData);
     } catch (error) {
-      console.error('카테고리 로드 실패:', error);
+      console.error('데이터 로드 실패:', error);
     }
   };
 
@@ -65,14 +71,17 @@ export default function TransactionEditModal({ transaction, onClose, onSuccess }
               <select
                 value={formData.type}
                 onChange={(e) => {
-                  const newType = e.target.value as TransactionType;
-                  setFormData({ ...formData, type: newType, category: '' });
+                  setFormData({ ...formData, type: e.target.value, category: '' });
                 }}
                 className="w-full p-2 border border-gray-300 rounded-md"
                 required
               >
-                <option value="expense">지출</option>
-                <option value="income">수입</option>
+                <option value="">선택하세요</option>
+                {types.map((type) => (
+                  <option key={type.id} value={type.name}>
+                    {type.display_name}
+                  </option>
+                ))}
               </select>
             </div>
 

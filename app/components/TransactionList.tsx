@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Transaction } from '@/types/transaction';
-import { deleteTransaction } from '@/lib/db-client';
+import { deleteTransaction, getTransactionTypes } from '@/lib/db-client';
+import { TransactionType } from '@/types/transaction-type';
 import TransactionEditModal from './TransactionEditModal';
 
 interface TransactionListProps {
@@ -12,6 +13,30 @@ interface TransactionListProps {
 
 export default function TransactionList({ transactions, onDelete }: TransactionListProps) {
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
+  const [types, setTypes] = useState<TransactionType[]>([]);
+
+  useEffect(() => {
+    loadTypes();
+  }, []);
+
+  const loadTypes = async () => {
+    try {
+      const data = await getTransactionTypes();
+      setTypes(data);
+    } catch (error) {
+      console.error('유형 로드 실패:', error);
+    }
+  };
+
+  const getTypeDisplay = (typeName: string) => {
+    const type = types.find(t => t.name === typeName);
+    return type ? type.display_name : typeName;
+  };
+
+  const getTypeColor = (typeName: string) => {
+    const type = types.find(t => t.name === typeName);
+    return type?.color || '#6B7280';
+  };
 
   const handleDelete = async (id: string) => {
     if (!confirm('정말 삭제하시겠습니까?')) return;
@@ -102,13 +127,10 @@ export default function TransactionList({ transactions, onDelete }: TransactionL
                   <td className="p-2">{formatDate(transaction.date)}</td>
                   <td className="p-2">
                     <span
-                      className={`px-2 py-1 rounded text-sm ${
-                        transaction.type === 'income'
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-red-100 text-red-800'
-                      }`}
+                      className="px-2 py-1 rounded text-sm text-white"
+                      style={{ backgroundColor: getTypeColor(transaction.type) }}
                     >
-                      {transaction.type === 'income' ? '수입' : '지출'}
+                      {getTypeDisplay(transaction.type)}
                     </span>
                   </td>
                   <td className="p-2">{transaction.category}</td>

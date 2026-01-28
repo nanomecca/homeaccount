@@ -1,6 +1,7 @@
 import { Pool } from 'pg';
 import { Transaction, TransactionFormData } from '@/types/transaction';
 import { Category, CategoryFormData } from '@/types/category';
+import { TransactionType, TransactionTypeFormData } from '@/types/transaction-type';
 
 // PostgreSQL 연결 풀 생성
 let pool: Pool | null = null;
@@ -123,7 +124,7 @@ export async function getTransactionsByDateRange(startDate: string, endDate: str
 }
 
 // Categories
-export async function getCategories(type?: 'income' | 'expense'): Promise<Category[]> {
+export async function getCategories(type?: string): Promise<Category[]> {
   const client = await getPool().connect();
   try {
     let query = 'SELECT * FROM categories';
@@ -173,6 +174,59 @@ export async function deleteCategory(id: string): Promise<void> {
   const client = await getPool().connect();
   try {
     await client.query('DELETE FROM categories WHERE id = $1', [id]);
+  } finally {
+    client.release();
+  }
+}
+
+// Transaction Types
+export async function getTransactionTypes(): Promise<TransactionType[]> {
+  const client = await getPool().connect();
+  try {
+    const result = await client.query(
+      'SELECT * FROM transaction_types ORDER BY display_name ASC'
+    );
+    return result.rows as TransactionType[];
+  } finally {
+    client.release();
+  }
+}
+
+export async function addTransactionType(type: TransactionTypeFormData): Promise<TransactionType> {
+  const client = await getPool().connect();
+  try {
+    const result = await client.query(
+      `INSERT INTO transaction_types (name, display_name, color)
+       VALUES ($1, $2, $3)
+       RETURNING *`,
+      [type.name, type.display_name, type.color || null]
+    );
+    return result.rows[0] as TransactionType;
+  } finally {
+    client.release();
+  }
+}
+
+export async function updateTransactionType(id: string, type: TransactionTypeFormData): Promise<TransactionType> {
+  const client = await getPool().connect();
+  try {
+    const result = await client.query(
+      `UPDATE transaction_types 
+       SET name = $1, display_name = $2, color = $3
+       WHERE id = $4
+       RETURNING *`,
+      [type.name, type.display_name, type.color || null, id]
+    );
+    return result.rows[0] as TransactionType;
+  } finally {
+    client.release();
+  }
+}
+
+export async function deleteTransactionType(id: string): Promise<void> {
+  const client = await getPool().connect();
+  try {
+    await client.query('DELETE FROM transaction_types WHERE id = $1', [id]);
   } finally {
     client.release();
   }
