@@ -99,7 +99,7 @@ export default function Report() {
     const expenseByMainCategory = expenseTransactions.reduce((acc, t) => {
       const categoryInfo = categories.find(c => c.type === 'expense' && c.name === t.category);
       const mainCat = categoryInfo?.main_category || '';
-      if (mainCat && (!expenseMainCategory || mainCat === expenseMainCategory)) {
+      if (mainCat) {
         if (!acc[mainCat]) {
           acc[mainCat] = 0;
         }
@@ -112,12 +112,10 @@ export default function Report() {
     const expenseBySubCategory = expenseTransactions.reduce((acc, t) => {
       const categoryInfo = categories.find(c => c.type === 'expense' && c.name === t.category);
       const mainCat = categoryInfo?.main_category || '';
-      if ((!expenseMainCategory || mainCat === expenseMainCategory)) {
-        if (!acc[t.category]) {
-          acc[t.category] = { value: 0, mainCategory: mainCat };
-        }
-        acc[t.category].value += Number(t.amount);
+      if (!acc[t.category]) {
+        acc[t.category] = { value: 0, mainCategory: mainCat };
       }
+      acc[t.category].value += Number(t.amount);
       return acc;
     }, {} as Record<string, { value: number; mainCategory: string }>);
 
@@ -527,42 +525,29 @@ export default function Report() {
                 <div className="mb-6">
                   <div className="flex justify-between items-center mb-4">
                     <h3 className="text-lg font-semibold text-black">지출 카테고리별 리포트</h3>
-                    <div className="flex gap-2">
-                      <select
-                        value={expenseMainCategory}
-                        onChange={(e) => setExpenseMainCategory(e.target.value)}
-                        className="p-2 border border-gray-300 rounded-md text-gray-900 bg-white text-sm"
+                    <div className="flex gap-1 border border-gray-300 rounded-md overflow-hidden">
+                      <button
+                        type="button"
+                        onClick={() => setExpenseViewMode('main')}
+                        className={`px-3 py-2 text-sm ${
+                          expenseViewMode === 'main'
+                            ? 'bg-blue-600 text-white'
+                            : 'bg-white text-gray-700 hover:bg-gray-100'
+                        }`}
                       >
-                        {[...new Set(categories.filter(c => c.type === 'expense').map(c => c.main_category))].sort().map((mainCat) => (
-                          <option key={mainCat} value={mainCat}>
-                            {mainCat}
-                          </option>
-                        ))}
-                      </select>
-                      <div className="flex gap-1 border border-gray-300 rounded-md overflow-hidden">
-                        <button
-                          type="button"
-                          onClick={() => setExpenseViewMode('main')}
-                          className={`px-3 py-2 text-sm ${
-                            expenseViewMode === 'main'
-                              ? 'bg-blue-600 text-white'
-                              : 'bg-white text-gray-700 hover:bg-gray-100'
-                          }`}
-                        >
-                          대분류
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setExpenseViewMode('sub')}
-                          className={`px-3 py-2 text-sm ${
-                            expenseViewMode === 'sub'
-                              ? 'bg-blue-600 text-white'
-                              : 'bg-white text-gray-700 hover:bg-gray-100'
-                          }`}
-                        >
-                          소분류
-                        </button>
-                      </div>
+                        대분류
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setExpenseViewMode('sub')}
+                        className={`px-3 py-2 text-sm ${
+                          expenseViewMode === 'sub'
+                            ? 'bg-blue-600 text-white'
+                            : 'bg-white text-gray-700 hover:bg-gray-100'
+                        }`}
+                      >
+                        소분류
+                      </button>
                     </div>
                   </div>
                   <div className="flex justify-center mb-4">
@@ -816,50 +801,35 @@ export default function Report() {
                 <div className="mb-6">
                   <div className="flex justify-between items-center mb-4">
                     <h3 className="text-lg font-semibold text-black">지출 카테고리별 리포트</h3>
-                    <div className="flex gap-2">
-                      <select
-                        value={expenseMainCategory}
-                        onChange={(e) => setExpenseMainCategory(e.target.value)}
-                        className="p-2 border border-gray-300 rounded-md text-gray-900 bg-white text-sm"
+                    <div className="flex gap-1 border border-gray-300 rounded-md overflow-hidden">
+                      <button
+                        type="button"
+                        onClick={() => setExpenseViewMode('main')}
+                        className={`px-3 py-2 text-sm ${
+                          expenseViewMode === 'main'
+                            ? 'bg-blue-600 text-white'
+                            : 'bg-white text-gray-700 hover:bg-gray-100'
+                        }`}
                       >
-                        {[...new Set(categories.filter(c => c.type === 'expense').map(c => c.main_category))].sort().map((mainCat) => (
-                          <option key={mainCat} value={mainCat}>
-                            {mainCat}
-                          </option>
-                        ))}
-                      </select>
-                      <div className="flex gap-1 border border-gray-300 rounded-md overflow-hidden">
-                        <button
-                          type="button"
-                          onClick={() => setExpenseViewMode('main')}
-                          className={`px-3 py-2 text-sm ${
-                            expenseViewMode === 'main'
-                              ? 'bg-blue-600 text-white'
-                              : 'bg-white text-gray-700 hover:bg-gray-100'
-                          }`}
-                        >
-                          대분류
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setExpenseViewMode('sub')}
-                          className={`px-3 py-2 text-sm ${
-                            expenseViewMode === 'sub'
-                              ? 'bg-blue-600 text-white'
-                              : 'bg-white text-gray-700 hover:bg-gray-100'
-                          }`}
-                        >
-                          소분류
-                        </button>
-                      </div>
+                        대분류
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setExpenseViewMode('sub')}
+                        className={`px-3 py-2 text-sm ${
+                          expenseViewMode === 'sub'
+                            ? 'bg-blue-600 text-white'
+                            : 'bg-white text-gray-700 hover:bg-gray-100'
+                        }`}
+                      >
+                        소분류
+                      </button>
                     </div>
                   </div>
                   <div className="flex justify-center mb-4">
                     <ResponsiveContainer width="100%" height={400}>
                       <BarChart
-                        data={annualData.expenseCategoryData.filter(item => 
-                          !expenseMainCategory || item.mainCategory === expenseMainCategory
-                        )}
+                        data={annualData.expenseCategoryData}
                         layout="vertical"
                         margin={{ top: 20, right: 30, left: 100, bottom: 5 }}
                       >
@@ -886,9 +856,7 @@ export default function Report() {
                           radius={[0, 4, 4, 0]}
                           fill="#EF4444"
                         >
-                          {annualData.expenseCategoryData
-                            .filter(item => !expenseMainCategory || item.mainCategory === expenseMainCategory)
-                            .map((entry, index) => (
+                          {annualData.expenseCategoryData.map((entry, index) => (
                             <Cell
                               key={`cell-${index}`}
                               fill={COLORS[index % COLORS.length]}
@@ -920,9 +888,7 @@ export default function Report() {
                           </tr>
                         </thead>
                         <tbody>
-                          {annualData.expenseCategoryData
-                            .filter(item => !expenseMainCategory || item.mainCategory === expenseMainCategory)
-                            .map((item, index) => (
+                          {annualData.expenseCategoryData.map((item, index) => (
                             <tr key={item.name} className="border-b hover:bg-gray-100">
                               {expenseViewMode === 'sub' && item.mainCategory && (
                                 <td className="p-2 text-black text-gray-600">{item.mainCategory}</td>
