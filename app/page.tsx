@@ -6,7 +6,7 @@ import BulkTransactionForm from './components/BulkTransactionForm';
 import CategoryManager from './components/CategoryManager';
 import TransactionList from './components/TransactionList';
 import DateFilter from './components/DateFilter';
-import MonthlyReport from './components/MonthlyReport';
+import Report from './components/Report';
 import { getTransactions, getTransactionsByDateRange } from '@/lib/db-client';
 import { Transaction } from '@/types/transaction';
 
@@ -90,7 +90,7 @@ export default function Home() {
                   : 'border-transparent text-gray-500 hover:text-gray-700'
               }`}
             >
-              월별 리포트
+              리포트
             </button>
           </nav>
         </div>
@@ -106,7 +106,7 @@ export default function Home() {
           <CategoryManager onCategoryChange={handleCategoryChange} />
         )}
         {activeTab === 'report' && (
-          <MonthlyReport />
+          <Report />
         )}
         
         {activeTab !== 'report' && (
