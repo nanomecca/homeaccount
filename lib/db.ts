@@ -91,13 +91,3 @@ export async function deleteCategory(id: string) {
 
   if (error) throw error;
 }
-
-export async function addTransactions(transactions: TransactionFormData[]) {
-  const { data, error } = await supabase
-    .from('transactions')
-    .insert(transactions)
-    .select();
-
-  if (error) throw error;
-  return data as Transaction[];
-}
