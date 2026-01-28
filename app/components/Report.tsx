@@ -212,28 +212,28 @@ export default function Report() {
           
           <div className="flex gap-4 items-center mb-6">
             <div>
-              <label className="block text-sm font-medium mb-1">년도</label>
+              <label className="block text-sm font-medium mb-1 text-gray-700">년도</label>
               <select
                 value={selectedYear}
                 onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-                className="p-2 border border-gray-300 rounded-md"
+                className="p-2 border border-gray-300 rounded-md text-gray-900 bg-white"
               >
                 {years.map((year) => (
-                  <option key={year} value={year}>
+                  <option key={year} value={year} className="text-gray-900">
                     {year}년
                   </option>
                 ))}
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">월</label>
+              <label className="block text-sm font-medium mb-1 text-gray-700">월</label>
               <select
                 value={selectedMonth}
                 onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
-                className="p-2 border border-gray-300 rounded-md"
+                className="p-2 border border-gray-300 rounded-md text-gray-900 bg-white"
               >
                 {months.map((month) => (
-                  <option key={month} value={month}>
+                  <option key={month} value={month} className="text-gray-900">
                     {month}월
                   </option>
                 ))}
@@ -328,15 +328,15 @@ export default function Report() {
 
           <div className="space-y-4 mb-6">
             <div>
-              <label className="block text-sm font-medium mb-2">카테고리 선택</label>
+              <label className="block text-sm font-medium mb-2 text-gray-700">카테고리 선택</label>
               <select
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
-                className="w-full p-2 border border-gray-300 rounded-md"
+                className="w-full p-2 border border-gray-300 rounded-md text-gray-900 bg-white"
               >
-                <option value="">카테고리를 선택하세요</option>
+                <option value="" className="text-gray-500">카테고리를 선택하세요</option>
                 {allCategories.map((cat) => (
-                  <option key={cat} value={cat}>
+                  <option key={cat} value={cat} className="text-gray-900">
                     {cat}
                   </option>
                 ))}
@@ -345,21 +345,21 @@ export default function Report() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium mb-2">시작 날짜</label>
+                <label className="block text-sm font-medium mb-2 text-gray-700">시작 날짜</label>
                 <input
                   type="date"
                   value={startDate}
                   onChange={(e) => setStartDate(e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded-md"
+                  className="w-full p-2 border border-gray-300 rounded-md text-gray-900 bg-white"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-2">종료 날짜</label>
+                <label className="block text-sm font-medium mb-2 text-gray-700">종료 날짜</label>
                 <input
                   type="date"
                   value={endDate}
                   onChange={(e) => setEndDate(e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded-md"
+                  className="w-full p-2 border border-gray-300 rounded-md text-gray-900 bg-white"
                 />
               </div>
             </div>

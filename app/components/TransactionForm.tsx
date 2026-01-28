@@ -20,6 +20,7 @@ export default function TransactionForm({ onSuccess }: { onSuccess: () => void }
 
   useEffect(() => {
     loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadData = async () => {
@@ -72,18 +73,18 @@ export default function TransactionForm({ onSuccess }: { onSuccess: () => void }
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium mb-2">유형</label>
+          <label className="block text-sm font-medium mb-2 text-gray-700">유형</label>
           <select
             value={formData.type}
             onChange={(e) => {
               setFormData({ ...formData, type: e.target.value, category: '' });
             }}
-            className="w-full p-2 border border-gray-300 rounded-md"
+            className="w-full p-2 border border-gray-300 rounded-md text-gray-900 bg-white"
             required
           >
-            <option value="">선택하세요</option>
+            <option value="" className="text-gray-500">선택하세요</option>
             {types.map((type) => (
-              <option key={type.id} value={type.name}>
+              <option key={type.id} value={type.name} className="text-gray-900">
                 {type.display_name}
               </option>
             ))}
@@ -91,29 +92,30 @@ export default function TransactionForm({ onSuccess }: { onSuccess: () => void }
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-2">금액</label>
+          <label className="block text-sm font-medium mb-2 text-gray-700">금액</label>
           <input
             type="number"
             value={formData.amount || ''}
             onChange={(e) => setFormData({ ...formData, amount: parseFloat(e.target.value) || 0 })}
-            className="w-full p-2 border border-gray-300 rounded-md"
+            className="w-full p-2 border border-gray-300 rounded-md text-gray-900 bg-white"
             min="0"
             step="0.01"
+            placeholder="0"
             required
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-2">카테고리</label>
+          <label className="block text-sm font-medium mb-2 text-gray-700">카테고리</label>
           <select
             value={formData.category}
             onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-            className="w-full p-2 border border-gray-300 rounded-md"
+            className="w-full p-2 border border-gray-300 rounded-md text-gray-900 bg-white"
             required
           >
-            <option value="">선택하세요</option>
+            <option value="" className="text-gray-500">선택하세요</option>
             {currentCategories.map((cat) => (
-              <option key={cat.id} value={cat.name}>
+              <option key={cat.id} value={cat.name} className="text-gray-900">
                 {cat.name}
               </option>
             ))}
@@ -121,23 +123,23 @@ export default function TransactionForm({ onSuccess }: { onSuccess: () => void }
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-2">날짜</label>
+          <label className="block text-sm font-medium mb-2 text-gray-700">날짜</label>
           <input
             type="date"
             value={formData.date}
             onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-            className="w-full p-2 border border-gray-300 rounded-md"
+            className="w-full p-2 border border-gray-300 rounded-md text-gray-900 bg-white"
             required
           />
         </div>
 
         <div className="md:col-span-2">
-          <label className="block text-sm font-medium mb-2">설명 (선택사항)</label>
+          <label className="block text-sm font-medium mb-2 text-gray-700">설명 (선택사항)</label>
           <input
             type="text"
             value={formData.description}
             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-            className="w-full p-2 border border-gray-300 rounded-md"
+            className="w-full p-2 border border-gray-300 rounded-md text-gray-900 bg-white placeholder:text-gray-400"
             placeholder="거래에 대한 설명을 입력하세요"
           />
         </div>

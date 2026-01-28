@@ -15,13 +15,14 @@ export default function CategoryManager({ onCategoryChange }: { onCategoryChange
 
   useEffect(() => {
     loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     if (types.length > 0 && !selectedType) {
       setSelectedType(types[0].name);
     }
-  }, [types]);
+  }, [types, selectedType]);
 
   const loadData = async () => {
     try {
@@ -81,15 +82,15 @@ export default function CategoryManager({ onCategoryChange }: { onCategoryChange
       <h2 className="text-xl font-bold mb-4">카테고리 관리</h2>
       
       <div className="mb-4">
-        <label className="block text-sm font-medium mb-2">유형 선택</label>
+        <label className="block text-sm font-medium mb-2 text-gray-700">유형 선택</label>
         <select
           value={selectedType}
           onChange={(e) => setSelectedType(e.target.value)}
-          className="w-full p-2 border border-gray-300 rounded-md"
+          className="w-full p-2 border border-gray-300 rounded-md text-gray-900 bg-white"
         >
-          <option value="">선택하세요</option>
+          <option value="" className="text-gray-500">선택하세요</option>
           {types.map((type) => (
-            <option key={type.id} value={type.name}>
+            <option key={type.id} value={type.name} className="text-gray-900">
               {type.display_name}
             </option>
           ))}
@@ -103,7 +104,7 @@ export default function CategoryManager({ onCategoryChange }: { onCategoryChange
             value={newCategoryName}
             onChange={(e) => setNewCategoryName(e.target.value)}
             placeholder="새 카테고리 이름"
-            className="flex-1 p-2 border border-gray-300 rounded-md"
+            className="flex-1 p-2 border border-gray-300 rounded-md text-gray-900 bg-white placeholder:text-gray-400"
             required
           />
           <button

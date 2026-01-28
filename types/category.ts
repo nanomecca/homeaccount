@@ -1,11 +1,11 @@
 export interface Category {
   id: string;
-  type: 'income' | 'expense';
+  type: string;
   name: string;
   created_at?: string;
 }
 
 export interface CategoryFormData {
-  type: 'income' | 'expense';
+  type: string;
   name: string;
 }

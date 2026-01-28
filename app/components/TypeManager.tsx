@@ -92,30 +92,30 @@ export default function TypeManager({ onTypeChange }: { onTypeChange: () => void
       <form onSubmit={handleSubmit} className="mb-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
-            <label className="block text-sm font-medium mb-2">유형 코드 (영문)</label>
+            <label className="block text-sm font-medium mb-2 text-gray-700">유형 코드 (영문)</label>
             <input
               type="text"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value.toLowerCase().replace(/\s+/g, '_') })}
-              className="w-full p-2 border border-gray-300 rounded-md"
+              className="w-full p-2 border border-gray-300 rounded-md text-gray-900 bg-white placeholder:text-gray-400"
               placeholder="예: expense"
               required
               disabled={!!editingType}
             />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-2">표시 이름</label>
+            <label className="block text-sm font-medium mb-2 text-gray-700">표시 이름</label>
             <input
               type="text"
               value={formData.display_name}
               onChange={(e) => setFormData({ ...formData, display_name: e.target.value })}
-              className="w-full p-2 border border-gray-300 rounded-md"
+              className="w-full p-2 border border-gray-300 rounded-md text-gray-900 bg-white placeholder:text-gray-400"
               placeholder="예: 지출"
               required
             />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-2">색상</label>
+            <label className="block text-sm font-medium mb-2 text-gray-700">색상</label>
             <div className="flex gap-2">
               <input
                 type="color"
@@ -127,7 +127,7 @@ export default function TypeManager({ onTypeChange }: { onTypeChange: () => void
                 type="text"
                 value={formData.color}
                 onChange={(e) => setFormData({ ...formData, color: e.target.value })}
-                className="flex-1 p-2 border border-gray-300 rounded-md"
+                className="flex-1 p-2 border border-gray-300 rounded-md text-gray-900 bg-white placeholder:text-gray-400"
                 placeholder="#3B82F6"
               />
             </div>

@@ -23,6 +23,7 @@ export default function BulkTransactionForm({ onSuccess }: { onSuccess: () => vo
 
   useEffect(() => {
     loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -38,7 +39,7 @@ export default function BulkTransactionForm({ onSuccess }: { onSuccess: () => vo
         },
       ]);
     }
-  }, [types]);
+  }, [types, rows.length]);
 
   const loadData = async () => {
     try {
@@ -173,12 +174,12 @@ export default function BulkTransactionForm({ onSuccess }: { onSuccess: () => vo
                         updateRow(row.id, 'type', e.target.value);
                         updateRow(row.id, 'category', '');
                       }}
-                      className="w-full p-1 text-sm border border-gray-300 rounded"
+                      className="w-full p-1 text-sm border border-gray-300 rounded text-gray-900 bg-white"
                       required
                     >
-                      <option value="">선택</option>
+                      <option value="" className="text-gray-500">선택</option>
                       {types.map((type) => (
-                        <option key={type.id} value={type.name}>
+                        <option key={type.id} value={type.name} className="text-gray-900">
                           {type.display_name}
                         </option>
                       ))}
@@ -188,12 +189,12 @@ export default function BulkTransactionForm({ onSuccess }: { onSuccess: () => vo
                     <select
                       value={row.category}
                       onChange={(e) => updateRow(row.id, 'category', e.target.value)}
-                      className="w-full p-1 text-sm border border-gray-300 rounded"
+                      className="w-full p-1 text-sm border border-gray-300 rounded text-gray-900 bg-white"
                       required
                     >
-                      <option value="">선택</option>
+                      <option value="" className="text-gray-500">선택</option>
                       {availableCategories.map((cat) => (
-                        <option key={cat.id} value={cat.name}>
+                        <option key={cat.id} value={cat.name} className="text-gray-900">
                           {cat.name}
                         </option>
                       ))}
@@ -204,7 +205,7 @@ export default function BulkTransactionForm({ onSuccess }: { onSuccess: () => vo
                       type="number"
                       value={row.amount}
                       onChange={(e) => updateRow(row.id, 'amount', e.target.value)}
-                      className="w-full p-1 text-sm border border-gray-300 rounded"
+                      className="w-full p-1 text-sm border border-gray-300 rounded text-gray-900 bg-white placeholder:text-gray-400"
                       min="0"
                       step="0.01"
                       placeholder="0"
@@ -216,7 +217,7 @@ export default function BulkTransactionForm({ onSuccess }: { onSuccess: () => vo
                       type="text"
                       value={row.description}
                       onChange={(e) => updateRow(row.id, 'description', e.target.value)}
-                      className="w-full p-1 text-sm border border-gray-300 rounded"
+                      className="w-full p-1 text-sm border border-gray-300 rounded text-gray-900 bg-white placeholder:text-gray-400"
                       placeholder="설명 (선택)"
                     />
                   </td>
@@ -225,7 +226,7 @@ export default function BulkTransactionForm({ onSuccess }: { onSuccess: () => vo
                       type="date"
                       value={row.date}
                       onChange={(e) => updateRow(row.id, 'date', e.target.value)}
-                      className="w-full p-1 text-sm border border-gray-300 rounded"
+                      className="w-full p-1 text-sm border border-gray-300 rounded text-gray-900 bg-white"
                       required
                     />
                   </td>
