@@ -10,9 +10,10 @@ import TransactionEditModal from './TransactionEditModal';
 interface TransactionListProps {
   transactions: Transaction[];
   onDelete: () => void;
+  onCopy?: (transaction: Transaction) => void;
 }
 
-export default function TransactionList({ transactions, onDelete }: TransactionListProps) {
+export default function TransactionList({ transactions, onDelete, onCopy }: TransactionListProps) {
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
   const [types, setTypes] = useState<TransactionType[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -370,6 +371,14 @@ export default function TransactionList({ transactions, onDelete }: TransactionL
                         >
                           수정
                         </button>
+                        {onCopy && (
+                          <button
+                            onClick={() => onCopy(transaction)}
+                            className="text-green-600 hover:text-green-800 text-sm"
+                          >
+                            복사
+                          </button>
+                        )}
                         <button
                           onClick={() => handleDelete(transaction.id)}
                           className="text-red-600 hover:text-red-800 text-sm"

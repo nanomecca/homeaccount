@@ -1,13 +1,19 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { TransactionFormData } from '@/types/transaction';
+import { TransactionFormData, Transaction } from '@/types/transaction';
 import { addTransaction, getCategories, getTransactionTypes } from '@/lib/db-client';
 import { Category } from '@/types/category';
 import { TransactionType } from '@/types/transaction-type';
 import { formatAmountInput, parseAmountInput, extractNumbers } from '@/lib/format-amount';
 
-export default function TransactionForm({ onSuccess }: { onSuccess: () => void }) {
+interface TransactionFormProps {
+  onSuccess: () => void;
+  copiedTransaction?: Transaction | null;
+  onCopiedTransactionUsed?: () => void;
+}
+
+export default function TransactionForm({ onSuccess, copiedTransaction, onCopiedTransactionUsed }: TransactionFormProps) {
   const [formData, setFormData] = useState<TransactionFormData>({
     type: '',
     amount: 0,
@@ -24,6 +30,29 @@ export default function TransactionForm({ onSuccess }: { onSuccess: () => void }
     loadData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // 복사된 거래 데이터를 폼에 채우기
+  useEffect(() => {
+    if (copiedTransaction && categories.length > 0 && types.length > 0) {
+      const mainCategory = copiedTransaction.main_category || 
+        categories.find(c => c.type === copiedTransaction.type && c.name === copiedTransaction.category)?.main_category || '';
+      
+      setFormData({
+        type: copiedTransaction.type,
+        amount: copiedTransaction.amount,
+        category: copiedTransaction.category,
+        description: copiedTransaction.description || '',
+        date: new Date().toISOString().split('T')[0], // 오늘 날짜로 설정
+      });
+      setSelectedMainCategory(mainCategory);
+      
+      // 복사된 데이터 사용 완료 알림
+      if (onCopiedTransactionUsed) {
+        onCopiedTransactionUsed();
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [copiedTransaction, categories, types]);
 
   const loadData = async () => {
     try {
@@ -86,6 +115,10 @@ export default function TransactionForm({ onSuccess }: { onSuccess: () => void }
       });
       setSelectedMainCategory('');
       onSuccess();
+      // 복사된 데이터 사용 완료 알림
+      if (onCopiedTransactionUsed) {
+        onCopiedTransactionUsed();
+      }
     } catch (error) {
       console.error('거래 추가 실패:', error);
       alert('거래 추가에 실패했습니다.');

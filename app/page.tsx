@@ -18,6 +18,7 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'single' | 'bulk' | 'manage' | 'report'>('single');
   const [showChangePassword, setShowChangePassword] = useState(false);
+  const [copiedTransaction, setCopiedTransaction] = useState<Transaction | null>(null);
 
   const loadTransactions = async () => {
     setIsLoading(true);
@@ -42,6 +43,16 @@ export default function Home() {
   const handleCategoryChange = () => {
     // 카테고리가 변경되면 폼을 다시 렌더링하기 위해 상태 업데이트
     loadTransactions();
+  };
+
+  const handleCopyTransaction = (transaction: Transaction) => {
+    setCopiedTransaction(transaction);
+    // 단일 입력 탭으로 전환
+    setActiveTab('single');
+  };
+
+  const handleCopiedTransactionUsed = () => {
+    setCopiedTransaction(null);
   };
 
   // 인증 로딩 중
@@ -128,7 +139,11 @@ export default function Home() {
 
         {/* 탭 컨텐츠 */}
         {activeTab === 'single' && (
-          <TransactionForm onSuccess={loadTransactions} />
+          <TransactionForm 
+            onSuccess={loadTransactions} 
+            copiedTransaction={copiedTransaction}
+            onCopiedTransactionUsed={handleCopiedTransactionUsed}
+          />
         )}
         {activeTab === 'bulk' && (
           <div className="hidden md:block">
@@ -148,7 +163,11 @@ export default function Home() {
                 <p className="text-gray-600">로딩 중...</p>
               </div>
             ) : (
-              <TransactionList transactions={transactions} onDelete={loadTransactions} />
+              <TransactionList 
+                transactions={transactions} 
+                onDelete={loadTransactions}
+                onCopy={handleCopyTransaction}
+              />
             )}
           </>
         )}
