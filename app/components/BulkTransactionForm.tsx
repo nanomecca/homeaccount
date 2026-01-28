@@ -206,37 +206,10 @@ export default function BulkTransactionForm({ onSuccess }: { onSuccess: () => vo
                 <tr key={row.id} className="hover:bg-gray-50">
                   <td className="border p-1">
                     <input
-                      type="text"
+                      type="date"
                       value={row.date}
-                      onChange={(e) => {
-                        // 날짜 형식 검증 (YYYY-MM-DD)
-                        const value = e.target.value;
-                        // 숫자와 하이픈만 허용
-                        const cleaned = value.replace(/[^\d-]/g, '');
-                        // 자동 포맷팅: YYYY-MM-DD
-                        let formatted = cleaned;
-                        if (cleaned.length > 4 && cleaned[4] !== '-') {
-                          formatted = cleaned.slice(0, 4) + '-' + cleaned.slice(4);
-                        }
-                        if (formatted.length > 7 && formatted[7] !== '-') {
-                          formatted = formatted.slice(0, 7) + '-' + formatted.slice(7);
-                        }
-                        if (formatted.length > 10) {
-                          formatted = formatted.slice(0, 10);
-                        }
-                        updateRow(row.id, 'date', formatted);
-                      }}
-                      onBlur={(e) => {
-                        // 포커스가 벗어날 때 날짜 형식 검증
-                        const value = e.target.value;
-                        const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
-                        if (!dateRegex.test(value)) {
-                          // 형식이 맞지 않으면 오늘 날짜로 설정
-                          updateRow(row.id, 'date', new Date().toISOString().split('T')[0]);
-                        }
-                      }}
-                      placeholder="YYYY-MM-DD"
-                      className="w-full p-1 text-sm border border-gray-300 rounded text-gray-900 bg-white placeholder:text-gray-400"
+                      onChange={(e) => updateRow(row.id, 'date', e.target.value)}
+                      className="w-full p-1 text-sm border border-gray-300 rounded text-gray-900 bg-white"
                       required
                     />
                   </td>

@@ -62,7 +62,7 @@ export default function Home() {
     <main className="min-h-screen bg-gray-100 p-4 md:p-8">
       <div className="max-w-6xl mx-auto">
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-800">가계부</h1>
+          <h1 className="text-4xl font-bold text-gray-800">Home 자산관리 시스템</h1>
           <div className="flex items-center gap-4">
             <span className="text-gray-600">안녕하세요, <strong>{username}</strong>님</span>
             <button

@@ -3,8 +3,8 @@ import "./globals.css";
 import { AuthProvider } from "./contexts/AuthContext";
 
 export const metadata: Metadata = {
-  title: "가계부",
-  description: "웹 기반 가계부 애플리케이션",
+  title: "Home 자산관리 시스템",
+  description: "웹 기반 자산관리 시스템",
 };
 
 export default function RootLayout({

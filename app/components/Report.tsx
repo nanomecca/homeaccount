@@ -516,7 +516,6 @@ export default function Report() {
                         onChange={(e) => setExpenseMainCategory(e.target.value)}
                         className="p-2 border border-gray-300 rounded-md text-gray-900 bg-white text-sm"
                       >
-                        <option value="">전체 대분류</option>
                         {[...new Set(categories.filter(c => c.type === 'expense').map(c => c.main_category))].sort().map((mainCat) => (
                           <option key={mainCat} value={mainCat}>
                             {mainCat}
