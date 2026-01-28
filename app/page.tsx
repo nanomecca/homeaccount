@@ -7,15 +7,20 @@ import TypeCategoryManager from './components/TypeCategoryManager';
 import TransactionList from './components/TransactionList';
 import DateFilter from './components/DateFilter';
 import Report from './components/Report';
+import LoginForm from './components/LoginForm';
+import ChangePasswordModal from './components/ChangePasswordModal';
+import { useAuth } from './contexts/AuthContext';
 import { getTransactions, getTransactionsByDateRange } from '@/lib/db-client';
 import { Transaction } from '@/types/transaction';
 
 export default function Home() {
+  const { isAuthenticated, username, logout, isLoading: authLoading } = useAuth();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [activeTab, setActiveTab] = useState<'single' | 'bulk' | 'manage' | 'report'>('single');
+  const [showChangePassword, setShowChangePassword] = useState(false);
 
   const loadTransactions = async () => {
     setIsLoading(true);
@@ -36,19 +41,52 @@ export default function Home() {
   };
 
   useEffect(() => {
-    loadTransactions();
+    if (isAuthenticated) {
+      loadTransactions();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [startDate, endDate]);
+  }, [startDate, endDate, isAuthenticated]);
 
   const handleCategoryChange = () => {
     // 카테고리가 변경되면 폼을 다시 렌더링하기 위해 상태 업데이트
     loadTransactions();
   };
 
+  // 인증 로딩 중
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-100">
+        <p className="text-gray-600">로딩 중...</p>
+      </div>
+    );
+  }
+
+  // 로그인되지 않은 경우
+  if (!isAuthenticated) {
+    return <LoginForm />;
+  }
+
   return (
     <main className="min-h-screen bg-gray-100 p-4 md:p-8">
       <div className="max-w-6xl mx-auto">
-        <h1 className="text-4xl font-bold mb-8 text-gray-800">가계부</h1>
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-4xl font-bold text-gray-800">가계부</h1>
+          <div className="flex items-center gap-4">
+            <span className="text-gray-600">안녕하세요, <strong>{username}</strong>님</span>
+            <button
+              onClick={() => setShowChangePassword(true)}
+              className="text-sm text-blue-600 hover:text-blue-800"
+            >
+              비밀번호 변경
+            </button>
+            <button
+              onClick={logout}
+              className="bg-gray-200 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-300 text-sm"
+            >
+              로그아웃
+            </button>
+          </div>
+        </div>
         
         {/* 탭 메뉴 */}
         <div className="mb-6 border-b border-gray-200">
@@ -131,6 +169,11 @@ export default function Home() {
           </>
         )}
       </div>
+
+      {/* 비밀번호 변경 모달 */}
+      {showChangePassword && (
+        <ChangePasswordModal onClose={() => setShowChangePassword(false)} />
+      )}
     </main>
   );
 }
