@@ -222,30 +222,56 @@ export default function Report() {
       };
     });
 
-    // 카테고리별 집계 (지출)
-    const expenseByCategory = annualTransactions
-      .filter((t) => t.type === 'expense')
-      .reduce((acc, t) => {
-        const category = t.category;
-        if (!acc[category]) {
-          acc[category] = { value: 0, mainCategory: '' };
+    // 지출 카테고리별 데이터
+    const expenseTransactions = annualTransactions.filter((t) => t.type === 'expense');
+    
+    // 대분류별 데이터
+    const expenseByMainCategory = expenseTransactions.reduce((acc, t) => {
+      const categoryInfo = categories.find(c => c.type === 'expense' && c.name === t.category);
+      const mainCat = categoryInfo?.main_category || '';
+      if (mainCat) {
+        if (!acc[mainCat]) {
+          acc[mainCat] = 0;
         }
-        acc[category].value += Number(t.amount);
-        const categoryInfo = categories.find(c => c.type === 'expense' && c.name === category);
-        if (categoryInfo) {
-          acc[category].mainCategory = categoryInfo.main_category;
-        }
-        return acc;
-      }, {} as Record<string, { value: number; mainCategory: string }>);
+        acc[mainCat] += Number(t.amount);
+      }
+      return acc;
+    }, {} as Record<string, number>);
 
-    const expenseCategoryData = Object.entries(expenseByCategory)
-      .map(([name, data]) => ({
-        name,
-        value: data.value,
-        percent: totalExpense > 0 ? Math.round((data.value / totalExpense) * 100) : 0,
-        mainCategory: data.mainCategory,
-      }))
-      .sort((a, b) => b.value - a.value);
+    // 소분류별 데이터
+    const expenseBySubCategory = expenseTransactions.reduce((acc, t) => {
+      const categoryInfo = categories.find(c => c.type === 'expense' && c.name === t.category);
+      const mainCat = categoryInfo?.main_category || '';
+      if (!acc[t.category]) {
+        acc[t.category] = { value: 0, mainCategory: mainCat };
+      }
+      acc[t.category].value += Number(t.amount);
+      return acc;
+    }, {} as Record<string, { value: number; mainCategory: string }>);
+
+    // 선택된 모드에 따라 데이터 구성
+    let expenseCategoryData: Array<{ name: string; value: number; percent: number; mainCategory?: string }> = [];
+    
+    if (expenseViewMode === 'main') {
+      // 대분류별
+      expenseCategoryData = Object.entries(expenseByMainCategory)
+        .map(([name, value]) => ({
+          name,
+          value,
+          percent: totalExpense > 0 ? Math.round((value / totalExpense) * 100) : 0,
+        }))
+        .sort((a, b) => b.value - a.value);
+    } else {
+      // 소분류별
+      expenseCategoryData = Object.entries(expenseBySubCategory)
+        .map(([name, data]) => ({
+          name,
+          value: data.value,
+          percent: totalExpense > 0 ? Math.round((data.value / totalExpense) * 100) : 0,
+          mainCategory: data.mainCategory,
+        }))
+        .sort((a, b) => b.value - a.value);
+    }
 
     return {
       transactions: annualTransactions,

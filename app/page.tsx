@@ -111,7 +111,7 @@ export default function Home() {
                   : 'border-transparent text-gray-500 hover:text-gray-700'
               }`}
             >
-              관리
+              메뉴관리
             </button>
             <button
               onClick={() => setActiveTab('report')}
