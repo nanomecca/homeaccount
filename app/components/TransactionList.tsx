@@ -80,8 +80,22 @@ export default function TransactionList({ transactions, onDelete }: TransactionL
     return filtered.map(c => c.name).sort();
   };
 
+  // 오늘 기준 7일 전 날짜 계산
+  const getSevenDaysAgoDate = () => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const sevenDaysAgo = new Date(today);
+    sevenDaysAgo.setDate(today.getDate() - 7);
+    return sevenDaysAgo.toISOString().split('T')[0]; // YYYY-MM-DD 형식
+  };
+
+  const sevenDaysAgoDate = getSevenDaysAgoDate();
+
   // 필터링된 거래 내역
   const filteredTransactions = transactions.filter(t => {
+    // 기본 날짜 필터: 오늘 기준 7일 전까지만 표시
+    if (t.date < sevenDaysAgoDate) return false;
+    
     // 유형 필터
     if (filterType && t.type !== filterType) return false;
     
@@ -94,7 +108,7 @@ export default function TransactionList({ transactions, onDelete }: TransactionL
     // 소분류 필터
     if (filterSubCategory && t.category !== filterSubCategory) return false;
     
-    // 시작 날짜 필터
+    // 시작 날짜 필터 (7일 전보다 이후인 경우에만 적용)
     if (filterStartDate && t.date < filterStartDate) return false;
     
     // 종료 날짜 필터
