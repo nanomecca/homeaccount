@@ -21,6 +21,7 @@ export default function TransactionList({ transactions, onDelete }: TransactionL
   const [showFilters, setShowFilters] = useState<boolean>(false);
   const [filterType, setFilterType] = useState<string>('');
   const [filterMainCategory, setFilterMainCategory] = useState<string>('');
+  const [filterSubCategory, setFilterSubCategory] = useState<string>('');
   const [filterStartDate, setFilterStartDate] = useState<string>('');
   const [filterEndDate, setFilterEndDate] = useState<string>('');
 
@@ -69,6 +70,16 @@ export default function TransactionList({ transactions, onDelete }: TransactionL
     return mainCats.sort();
   };
 
+  // 선택된 대분류의 소분류 목록
+  const getSubCategories = () => {
+    if (!filterMainCategory) return [];
+    const type = filterType || null;
+    const filtered = type
+      ? categories.filter(c => c.type === type && c.main_category === filterMainCategory)
+      : categories.filter(c => c.main_category === filterMainCategory);
+    return filtered.map(c => c.name).sort();
+  };
+
   // 필터링된 거래 내역
   const filteredTransactions = transactions.filter(t => {
     // 유형 필터
@@ -79,6 +90,9 @@ export default function TransactionList({ transactions, onDelete }: TransactionL
       const mainCat = getMainCategory(t.type, t.category);
       if (mainCat !== filterMainCategory) return false;
     }
+    
+    // 소분류 필터
+    if (filterSubCategory && t.category !== filterSubCategory) return false;
     
     // 시작 날짜 필터
     if (filterStartDate && t.date < filterStartDate) return false;
@@ -93,6 +107,7 @@ export default function TransactionList({ transactions, onDelete }: TransactionL
   const resetFilters = () => {
     setFilterType('');
     setFilterMainCategory('');
+    setFilterSubCategory('');
     setFilterStartDate('');
     setFilterEndDate('');
   };
@@ -168,7 +183,7 @@ export default function TransactionList({ transactions, onDelete }: TransactionL
               필터 초기화
             </button>
           </div>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
           {/* 유형 필터 */}
           <div>
             <label className="block text-sm font-medium mb-1 text-gray-700">유형</label>
@@ -177,6 +192,7 @@ export default function TransactionList({ transactions, onDelete }: TransactionL
               onChange={(e) => {
                 setFilterType(e.target.value);
                 setFilterMainCategory('');
+                setFilterSubCategory('');
               }}
               className="w-full p-2 border border-gray-300 rounded-md text-gray-900 bg-white text-sm"
             >
@@ -194,13 +210,34 @@ export default function TransactionList({ transactions, onDelete }: TransactionL
             <label className="block text-sm font-medium mb-1 text-gray-700">대분류</label>
             <select
               value={filterMainCategory}
-              onChange={(e) => setFilterMainCategory(e.target.value)}
+              onChange={(e) => {
+                setFilterMainCategory(e.target.value);
+                setFilterSubCategory('');
+              }}
               className="w-full p-2 border border-gray-300 rounded-md text-gray-900 bg-white text-sm"
             >
               <option value="">전체</option>
               {getMainCategories().map((mainCat) => (
                 <option key={mainCat} value={mainCat}>
                   {mainCat}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* 소분류 필터 */}
+          <div>
+            <label className="block text-sm font-medium mb-1 text-gray-700">소분류</label>
+            <select
+              value={filterSubCategory}
+              onChange={(e) => setFilterSubCategory(e.target.value)}
+              className="w-full p-2 border border-gray-300 rounded-md text-gray-900 bg-white text-sm"
+              disabled={!filterMainCategory}
+            >
+              <option value="">전체</option>
+              {getSubCategories().map((subCat) => (
+                <option key={subCat} value={subCat}>
+                  {subCat}
                 </option>
               ))}
             </select>

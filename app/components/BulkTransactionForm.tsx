@@ -189,12 +189,12 @@ export default function BulkTransactionForm({ onSuccess }: { onSuccess: () => vo
         <table className="w-full border-collapse">
           <thead>
             <tr className="bg-gray-100">
+              <th className="border p-2 text-left text-sm font-medium text-black">날짜</th>
               <th className="border p-2 text-left text-sm font-medium text-black">유형</th>
               <th className="border p-2 text-left text-sm font-medium text-black">대분류</th>
               <th className="border p-2 text-left text-sm font-medium text-black">소분류</th>
               <th className="border p-2 text-left text-sm font-medium text-black">금액</th>
               <th className="border p-2 text-left text-sm font-medium text-black">설명</th>
-              <th className="border p-2 text-left text-sm font-medium text-black">날짜</th>
               <th className="border p-2 text-center text-sm font-medium w-12 text-black">삭제</th>
             </tr>
           </thead>
@@ -204,6 +204,42 @@ export default function BulkTransactionForm({ onSuccess }: { onSuccess: () => vo
               const subCategories = getSubCategories(row.type, row.mainCategory);
               return (
                 <tr key={row.id} className="hover:bg-gray-50">
+                  <td className="border p-1">
+                    <input
+                      type="text"
+                      value={row.date}
+                      onChange={(e) => {
+                        // 날짜 형식 검증 (YYYY-MM-DD)
+                        const value = e.target.value;
+                        // 숫자와 하이픈만 허용
+                        const cleaned = value.replace(/[^\d-]/g, '');
+                        // 자동 포맷팅: YYYY-MM-DD
+                        let formatted = cleaned;
+                        if (cleaned.length > 4 && cleaned[4] !== '-') {
+                          formatted = cleaned.slice(0, 4) + '-' + cleaned.slice(4);
+                        }
+                        if (formatted.length > 7 && formatted[7] !== '-') {
+                          formatted = formatted.slice(0, 7) + '-' + formatted.slice(7);
+                        }
+                        if (formatted.length > 10) {
+                          formatted = formatted.slice(0, 10);
+                        }
+                        updateRow(row.id, 'date', formatted);
+                      }}
+                      onBlur={(e) => {
+                        // 포커스가 벗어날 때 날짜 형식 검증
+                        const value = e.target.value;
+                        const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+                        if (!dateRegex.test(value)) {
+                          // 형식이 맞지 않으면 오늘 날짜로 설정
+                          updateRow(row.id, 'date', new Date().toISOString().split('T')[0]);
+                        }
+                      }}
+                      placeholder="YYYY-MM-DD"
+                      className="w-full p-1 text-sm border border-gray-300 rounded text-gray-900 bg-white placeholder:text-gray-400"
+                      required
+                    />
+                  </td>
                   <td className="border p-1">
                     <select
                       value={row.type}
@@ -282,15 +318,6 @@ export default function BulkTransactionForm({ onSuccess }: { onSuccess: () => vo
                       onChange={(e) => updateRow(row.id, 'description', e.target.value)}
                       className="w-full p-1 text-sm border border-gray-300 rounded text-gray-900 bg-white placeholder:text-gray-400"
                       placeholder="설명"
-                    />
-                  </td>
-                  <td className="border p-1">
-                    <input
-                      type="date"
-                      value={row.date}
-                      onChange={(e) => updateRow(row.id, 'date', e.target.value)}
-                      className="w-full p-1 text-sm border border-gray-300 rounded text-gray-900 bg-white"
-                      required
                     />
                   </td>
                   <td className="border p-1 text-center">

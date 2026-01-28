@@ -21,6 +21,8 @@ export default function Report() {
   const [categoryYear, setCategoryYear] = useState(new Date().getFullYear());
   const [categoryMonth, setCategoryMonth] = useState(new Date().getMonth() + 1);
   const [categoryDateMode, setCategoryDateMode] = useState<'month' | 'range'>('month');
+  const [expenseMainCategory, setExpenseMainCategory] = useState<string>('');
+  const [expenseViewMode, setExpenseViewMode] = useState<'main' | 'sub'>('sub');
 
   useEffect(() => {
     loadData();
@@ -96,24 +98,57 @@ export default function Report() {
       .sort((a, b) => b.value - a.value);
 
     // 지출 카테고리별 데이터
-    const expenseByCategory = monthlyTransactions
-      .filter((t) => t.type === 'expense')
-      .reduce((acc, t) => {
-        const category = t.category;
-        if (!acc[category]) {
-          acc[category] = 0;
+    const expenseTransactions = monthlyTransactions.filter((t) => t.type === 'expense');
+    
+    // 대분류별 데이터
+    const expenseByMainCategory = expenseTransactions.reduce((acc, t) => {
+      const categoryInfo = categories.find(c => c.type === 'expense' && c.name === t.category);
+      const mainCat = categoryInfo?.main_category || '';
+      if (mainCat && (!expenseMainCategory || mainCat === expenseMainCategory)) {
+        if (!acc[mainCat]) {
+          acc[mainCat] = 0;
         }
-        acc[category] += Number(t.amount);
-        return acc;
-      }, {} as Record<string, number>);
+        acc[mainCat] += Number(t.amount);
+      }
+      return acc;
+    }, {} as Record<string, number>);
 
-    const expenseCategoryData = Object.entries(expenseByCategory)
-      .map(([name, value]) => ({
-        name,
-        value,
-        percent: totalExpense > 0 ? Math.round((value / totalExpense) * 100) : 0,
-      }))
-      .sort((a, b) => b.value - a.value);
+    // 소분류별 데이터
+    const expenseBySubCategory = expenseTransactions.reduce((acc, t) => {
+      const categoryInfo = categories.find(c => c.type === 'expense' && c.name === t.category);
+      const mainCat = categoryInfo?.main_category || '';
+      if ((!expenseMainCategory || mainCat === expenseMainCategory)) {
+        if (!acc[t.category]) {
+          acc[t.category] = { value: 0, mainCategory: mainCat };
+        }
+        acc[t.category].value += Number(t.amount);
+      }
+      return acc;
+    }, {} as Record<string, { value: number; mainCategory: string }>);
+
+    // 선택된 모드에 따라 데이터 구성
+    let expenseCategoryData: Array<{ name: string; value: number; percent: number; mainCategory?: string }> = [];
+    
+    if (expenseViewMode === 'main') {
+      // 대분류별
+      expenseCategoryData = Object.entries(expenseByMainCategory)
+        .map(([name, value]) => ({
+          name,
+          value,
+          percent: totalExpense > 0 ? Math.round((value / totalExpense) * 100) : 0,
+        }))
+        .sort((a, b) => b.value - a.value);
+    } else {
+      // 소분류별
+      expenseCategoryData = Object.entries(expenseBySubCategory)
+        .map(([name, data]) => ({
+          name,
+          value: data.value,
+          percent: totalExpense > 0 ? Math.round((data.value / totalExpense) * 100) : 0,
+          mainCategory: data.mainCategory,
+        }))
+        .sort((a, b) => b.value - a.value);
+    }
 
     // 수입 대비 지출 퍼센트
     const expenseRatio = totalIncome > 0 ? Math.round((totalExpense / totalIncome) * 100) : 0;
@@ -473,7 +508,47 @@ export default function Report() {
               {/* 지출 카테고리별 리포트 */}
               {monthlyData.expenseCategoryData.length > 0 && (
                 <div className="mb-6">
-                  <h3 className="text-lg font-semibold mb-4 text-black">지출 카테고리별 리포트</h3>
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="text-lg font-semibold text-black">지출 카테고리별 리포트</h3>
+                    <div className="flex gap-2">
+                      <select
+                        value={expenseMainCategory}
+                        onChange={(e) => setExpenseMainCategory(e.target.value)}
+                        className="p-2 border border-gray-300 rounded-md text-gray-900 bg-white text-sm"
+                      >
+                        <option value="">전체 대분류</option>
+                        {[...new Set(categories.filter(c => c.type === 'expense').map(c => c.main_category))].sort().map((mainCat) => (
+                          <option key={mainCat} value={mainCat}>
+                            {mainCat}
+                          </option>
+                        ))}
+                      </select>
+                      <div className="flex gap-1 border border-gray-300 rounded-md overflow-hidden">
+                        <button
+                          type="button"
+                          onClick={() => setExpenseViewMode('main')}
+                          className={`px-3 py-2 text-sm ${
+                            expenseViewMode === 'main'
+                              ? 'bg-blue-600 text-white'
+                              : 'bg-white text-gray-700 hover:bg-gray-100'
+                          }`}
+                        >
+                          대분류
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setExpenseViewMode('sub')}
+                          className={`px-3 py-2 text-sm ${
+                            expenseViewMode === 'sub'
+                              ? 'bg-blue-600 text-white'
+                              : 'bg-white text-gray-700 hover:bg-gray-100'
+                          }`}
+                        >
+                          소분류
+                        </button>
+                      </div>
+                    </div>
+                  </div>
                   <div className="flex justify-center mb-4">
                     <ResponsiveContainer width="100%" height={400}>
                       <BarChart
@@ -527,7 +602,10 @@ export default function Report() {
                       <table className="w-full">
                         <thead>
                           <tr className="border-b">
-                            <th className="text-left p-2 text-black">카테고리</th>
+                            {expenseViewMode === 'sub' && (
+                              <th className="text-left p-2 text-black">대분류</th>
+                            )}
+                            <th className="text-left p-2 text-black">{expenseViewMode === 'main' ? '대분류' : '소분류'}</th>
                             <th className="text-right p-2 text-black">금액</th>
                             <th className="text-right p-2 text-black">비율</th>
                           </tr>
@@ -535,6 +613,9 @@ export default function Report() {
                         <tbody>
                           {monthlyData.expenseCategoryData.map((item, index) => (
                             <tr key={item.name} className="border-b hover:bg-gray-100">
+                              {expenseViewMode === 'sub' && item.mainCategory && (
+                                <td className="p-2 text-black text-gray-600">{item.mainCategory}</td>
+                              )}
                               <td className="p-2 text-black">{item.name}</td>
                               <td className="p-2 text-right font-semibold text-red-600">
                                 {formatAmount(item.value)}
