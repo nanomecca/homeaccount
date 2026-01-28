@@ -26,9 +26,10 @@ BEGIN
 END $$;
 
 -- 기본 사용자 추가 (nano / password)
+-- bcrypt로 해시된 비밀번호 사용 (원본: 'password')
 -- 이미 존재하면 무시
 INSERT INTO users (username, password) 
-VALUES ('nano', 'password')
+VALUES ('nano', '$2b$10$OjKC2su86KY3Hq7oS5Omy.5qSSCwAAJ4NAoImC2WuGSaHg/RnV74C')
 ON CONFLICT (username) DO NOTHING;
 
 -- 인덱스 추가

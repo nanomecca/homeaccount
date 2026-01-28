@@ -29,10 +29,12 @@ export default function BulkTransactionForm({ onSuccess }: { onSuccess: () => vo
 
   useEffect(() => {
     if (types.length > 0 && rows.length === 0) {
+      // 'expense' (지출)를 기본값으로 설정, 없으면 첫 번째 유형 사용
+      const defaultType = types.find(t => t.name === 'expense') || types[0];
       setRows([
         {
           id: '1',
-          type: types[0].name,
+          type: defaultType.name,
           mainCategory: '',
           amount: '',
           category: '',
@@ -57,11 +59,13 @@ export default function BulkTransactionForm({ onSuccess }: { onSuccess: () => vo
   };
 
   const addRow = () => {
+    // 'expense' (지출)를 기본값으로 설정, 없으면 첫 번째 유형 사용
+    const defaultType = types.find(t => t.name === 'expense') || (types.length > 0 ? types[0] : null);
     setRows([
       ...rows,
       {
         id: Date.now().toString(),
-        type: types.length > 0 ? types[0].name : '',
+        type: defaultType ? defaultType.name : '',
         mainCategory: '',
         amount: '',
         category: '',
@@ -128,10 +132,12 @@ export default function BulkTransactionForm({ onSuccess }: { onSuccess: () => vo
       }));
 
       await addTransactions(transactions);
+      // 'expense' (지출)를 기본값으로 설정, 없으면 첫 번째 유형 사용
+      const defaultType = types.find(t => t.name === 'expense') || (types.length > 0 ? types[0] : null);
       setRows([
         {
           id: '1',
-          type: types.length > 0 ? types[0].name : 'expense',
+          type: defaultType ? defaultType.name : 'expense',
           mainCategory: '',
           amount: '',
           category: '',

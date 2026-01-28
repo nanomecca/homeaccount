@@ -7,12 +7,15 @@ export default function LoginForm() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [message, setMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isInitializing, setIsInitializing] = useState(false);
   const { login } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setMessage('');
     setIsLoading(true);
 
     try {
@@ -24,6 +27,27 @@ export default function LoginForm() {
       setError('로그인 중 오류가 발생했습니다.');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleInitPassword = async () => {
+    setIsInitializing(true);
+    setError('');
+    setMessage('');
+    
+    try {
+      const response = await fetch('/api/auth/init', { method: 'POST' });
+      const data = await response.json();
+      
+      if (data.success) {
+        setMessage('비밀번호가 초기화되었습니다. nano / password 로 로그인하세요.');
+      } else {
+        setError(data.message || '초기화에 실패했습니다.');
+      }
+    } catch (err) {
+      setError('초기화 중 오류가 발생했습니다.');
+    } finally {
+      setIsInitializing(false);
     }
   };
 
@@ -61,6 +85,10 @@ export default function LoginForm() {
             <p className="text-red-600 text-sm">{error}</p>
           )}
 
+          {message && (
+            <p className="text-green-600 text-sm">{message}</p>
+          )}
+
           <button
             type="submit"
             disabled={isLoading}
@@ -69,6 +97,20 @@ export default function LoginForm() {
             {isLoading ? '로그인 중...' : '로그인'}
           </button>
         </form>
+
+        <div className="mt-6 pt-4 border-t border-gray-200">
+          <p className="text-sm text-gray-600 mb-2 text-center">
+            처음 사용하시거나 로그인이 안 되나요?
+          </p>
+          <button
+            type="button"
+            onClick={handleInitPassword}
+            disabled={isInitializing}
+            className="w-full bg-gray-600 text-white py-2 px-4 rounded-md hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+          >
+            {isInitializing ? '초기화 중...' : '비밀번호 초기화 (nano/password)'}
+          </button>
+        </div>
       </div>
     </div>
   );
