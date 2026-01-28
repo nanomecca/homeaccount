@@ -6,7 +6,6 @@ import { Transaction } from '@/types/transaction';
 import { Category } from '@/types/category';
 import { TransactionType } from '@/types/transaction-type';
 import { getTransactions, getCategories, getTransactionTypes } from '@/lib/db-client';
-import * as XLSX from 'xlsx';
 
 export default function Report() {
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
@@ -189,7 +188,7 @@ export default function Report() {
   };
 
   // 엑셀 다운로드 함수
-  const exportToExcel = () => {
+  const exportToExcel = async () => {
     const monthlyTransactions = monthlyData.transactions;
     
     if (monthlyTransactions.length === 0) {
@@ -197,43 +196,51 @@ export default function Report() {
       return;
     }
 
-    // 엑셀 데이터 준비
-    const excelData = monthlyTransactions.map((t) => {
-      const date = new Date(t.date);
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const day = String(date.getDate()).padStart(2, '0');
+    try {
+      // 동적 import로 xlsx 로드
+      const XLSX = await import('xlsx');
+
+      // 엑셀 데이터 준비
+      const excelData = monthlyTransactions.map((t) => {
+        const date = new Date(t.date);
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        
+        return {
+          '날짜': `${year}-${month}-${day}`,
+          '유형': getTypeDisplayName(t.type),
+          '카테고리': t.category,
+          '금액': Number(t.amount),
+          '설명': t.description || '',
+        };
+      });
+
+      // 워크북 생성
+      const ws = XLSX.utils.json_to_sheet(excelData);
       
-      return {
-        '날짜': `${year}-${month}-${day}`,
-        '유형': getTypeDisplayName(t.type),
-        '카테고리': t.category,
-        '금액': Number(t.amount),
-        '설명': t.description || '',
-      };
-    });
+      // 컬럼 너비 자동 조정
+      const colWidths = [
+        { wch: 12 }, // 날짜
+        { wch: 10 }, // 유형
+        { wch: 15 }, // 카테고리
+        { wch: 15 }, // 금액
+        { wch: 30 }, // 설명
+      ];
+      ws['!cols'] = colWidths;
+      
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, '거래내역');
 
-    // 워크북 생성
-    const ws = XLSX.utils.json_to_sheet(excelData);
-    
-    // 컬럼 너비 자동 조정
-    const colWidths = [
-      { wch: 12 }, // 날짜
-      { wch: 10 }, // 유형
-      { wch: 15 }, // 카테고리
-      { wch: 15 }, // 금액
-      { wch: 30 }, // 설명
-    ];
-    ws['!cols'] = colWidths;
-    
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, '거래내역');
+      // 한글 인코딩을 위한 파일명
+      const fileName = `${selectedYear}년_${selectedMonth}월_거래내역.xlsx`;
 
-    // 한글 인코딩을 위한 파일명
-    const fileName = `${selectedYear}년_${selectedMonth}월_거래내역.xlsx`;
-
-    // 파일 다운로드
-    XLSX.writeFile(wb, fileName);
+      // 파일 다운로드
+      XLSX.writeFile(wb, fileName);
+    } catch (error) {
+      console.error('엑셀 다운로드 실패:', error);
+      alert('엑셀 다운로드에 실패했습니다.');
+    }
   };
 
   return (
