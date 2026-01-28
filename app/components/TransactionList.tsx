@@ -18,6 +18,7 @@ export default function TransactionList({ transactions, onDelete }: TransactionL
   const [categories, setCategories] = useState<Category[]>([]);
   
   // 필터 상태
+  const [showFilters, setShowFilters] = useState<boolean>(false);
   const [filterType, setFilterType] = useState<string>('');
   const [filterMainCategory, setFilterMainCategory] = useState<string>('');
   const [filterStartDate, setFilterStartDate] = useState<string>('');
@@ -145,19 +146,28 @@ export default function TransactionList({ transactions, onDelete }: TransactionL
 
   return (
     <div className="bg-white rounded-lg shadow-md p-6">
-      <h2 className="text-xl font-bold mb-4 text-black">거래 내역</h2>
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-xl font-bold text-black">거래 내역</h2>
+        <button
+          onClick={() => setShowFilters(!showFilters)}
+          className="text-sm text-blue-600 hover:text-blue-800 px-3 py-1 border border-blue-600 rounded-md hover:bg-blue-50"
+        >
+          {showFilters ? '필터 숨기기' : '필터 보기'}
+        </button>
+      </div>
       
       {/* 필터 섹션 */}
-      <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-        <div className="flex justify-between items-center mb-3">
-          <h3 className="text-md font-semibold text-black">필터</h3>
-          <button
-            onClick={resetFilters}
-            className="text-sm text-blue-600 hover:text-blue-800"
-          >
-            필터 초기화
-          </button>
-        </div>
+      {showFilters && (
+        <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+          <div className="flex justify-between items-center mb-3">
+            <h3 className="text-md font-semibold text-black">필터</h3>
+            <button
+              onClick={resetFilters}
+              className="text-sm text-blue-600 hover:text-blue-800"
+            >
+              필터 초기화
+            </button>
+          </div>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {/* 유형 필터 */}
           <div>
@@ -219,11 +229,12 @@ export default function TransactionList({ transactions, onDelete }: TransactionL
           </div>
         </div>
         
-        {/* 필터 적용 결과 표시 */}
-        <p className="mt-3 text-sm text-gray-600">
-          총 {filteredTransactions.length}건의 거래가 표시됩니다.
-        </p>
-      </div>
+          {/* 필터 적용 결과 표시 */}
+          <p className="mt-3 text-sm text-gray-600">
+            총 {filteredTransactions.length}건의 거래가 표시됩니다.
+          </p>
+        </div>
+      )}
       
       <div className="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="bg-green-50 p-4 rounded-lg">

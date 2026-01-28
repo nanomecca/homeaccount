@@ -5,32 +5,24 @@ import TransactionForm from './components/TransactionForm';
 import BulkTransactionForm from './components/BulkTransactionForm';
 import TypeCategoryManager from './components/TypeCategoryManager';
 import TransactionList from './components/TransactionList';
-import DateFilter from './components/DateFilter';
 import Report from './components/Report';
 import LoginForm from './components/LoginForm';
 import ChangePasswordModal from './components/ChangePasswordModal';
 import { useAuth } from './contexts/AuthContext';
-import { getTransactions, getTransactionsByDateRange } from '@/lib/db-client';
+import { getTransactions } from '@/lib/db-client';
 import { Transaction } from '@/types/transaction';
 
 export default function Home() {
   const { isAuthenticated, username, logout, isLoading: authLoading } = useAuth();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
   const [activeTab, setActiveTab] = useState<'single' | 'bulk' | 'manage' | 'report'>('single');
   const [showChangePassword, setShowChangePassword] = useState(false);
 
   const loadTransactions = async () => {
     setIsLoading(true);
     try {
-      let data;
-      if (startDate && endDate) {
-        data = await getTransactionsByDateRange(startDate, endDate);
-      } else {
-        data = await getTransactions();
-      }
+      const data = await getTransactions();
       setTransactions(data);
     } catch (error) {
       console.error('거래 내역 로드 실패:', error);
@@ -45,7 +37,7 @@ export default function Home() {
       loadTransactions();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [startDate, endDate, isAuthenticated]);
+  }, [isAuthenticated]);
 
   const handleCategoryChange = () => {
     // 카테고리가 변경되면 폼을 다시 렌더링하기 위해 상태 업데이트
@@ -152,13 +144,6 @@ export default function Home() {
         
         {activeTab !== 'report' && activeTab !== 'manage' && (
           <>
-            <DateFilter
-              startDate={startDate}
-              endDate={endDate}
-              onStartDateChange={setStartDate}
-              onEndDateChange={setEndDate}
-            />
-
             {isLoading ? (
               <div className="bg-white rounded-lg shadow-md p-8 text-center">
                 <p className="text-gray-600">로딩 중...</p>
