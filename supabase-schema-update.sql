@@ -28,8 +28,17 @@ CREATE INDEX IF NOT EXISTS idx_transaction_types_name ON transaction_types(name)
 -- Row Level Security (RLS) 활성화
 ALTER TABLE transaction_types ENABLE ROW LEVEL SECURITY;
 
--- 모든 사용자가 읽기/쓰기 가능하도록 정책 설정
-CREATE POLICY "Allow all operations for all users on transaction_types" ON transaction_types
-  FOR ALL
-  USING (true)
-  WITH CHECK (true);
+-- 모든 사용자가 읽기/쓰기 가능하도록 정책 설정 (이미 존재하면 건너뜀)
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies 
+    WHERE tablename = 'transaction_types' 
+    AND policyname = 'Allow all operations for all users on transaction_types'
+  ) THEN
+    CREATE POLICY "Allow all operations for all users on transaction_types" ON transaction_types
+      FOR ALL
+      USING (true)
+      WITH CHECK (true);
+  END IF;
+END $$;
