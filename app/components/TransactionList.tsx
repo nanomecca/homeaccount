@@ -182,12 +182,12 @@ export default function TransactionList({ transactions, onDelete, onCopy }: Tran
   const balance = totalIncome - totalExpense;
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6">
+    <div className="bg-white rounded-lg shadow-md p-4 md:p-6">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-bold text-black">거래 내역</h2>
         <button
           onClick={() => setShowFilters(!showFilters)}
-          className="text-sm text-blue-600 hover:text-blue-800 px-3 py-1 border border-blue-600 rounded-md hover:bg-blue-50"
+          className="text-sm text-blue-600 hover:text-blue-800 px-3 py-2 border border-blue-600 rounded-md hover:bg-blue-50 min-h-[44px]"
         >
           {showFilters ? '필터 숨기기' : '필터 보기'}
         </button>
@@ -200,7 +200,7 @@ export default function TransactionList({ transactions, onDelete, onCopy }: Tran
             <h3 className="text-md font-semibold text-black">필터</h3>
             <button
               onClick={resetFilters}
-              className="text-sm text-blue-600 hover:text-blue-800"
+              className="text-sm text-blue-600 hover:text-blue-800 px-3 py-2 min-h-[44px]"
             >
               필터 초기화
             </button>
@@ -295,18 +295,18 @@ export default function TransactionList({ transactions, onDelete, onCopy }: Tran
         </div>
       )}
       
-      <div className="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-green-50 p-4 rounded-lg">
-          <p className="text-sm mb-1 text-black">총 수입</p>
-          <p className="text-2xl font-bold text-green-600">{formatAmount(totalIncome)}</p>
+      <div className="mb-4 md:mb-6 grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
+        <div className="bg-green-50 p-3 md:p-4 rounded-lg">
+          <p className="text-xs md:text-sm mb-1 text-black">총 수입</p>
+          <p className="text-xl md:text-2xl font-bold text-green-600">{formatAmount(totalIncome)}</p>
         </div>
-        <div className="bg-red-50 p-4 rounded-lg">
-          <p className="text-sm mb-1 text-black">총 지출</p>
-          <p className="text-2xl font-bold text-red-600">{formatAmount(totalExpense)}</p>
+        <div className="bg-red-50 p-3 md:p-4 rounded-lg">
+          <p className="text-xs md:text-sm mb-1 text-black">총 지출</p>
+          <p className="text-xl md:text-2xl font-bold text-red-600">{formatAmount(totalExpense)}</p>
         </div>
-        <div className={`p-4 rounded-lg ${balance >= 0 ? 'bg-blue-50' : 'bg-orange-50'}`}>
-          <p className="text-sm mb-1 text-black">잔액</p>
-          <p className={`text-2xl font-bold ${balance >= 0 ? 'text-blue-600' : 'text-orange-600'}`}>
+        <div className={`p-3 md:p-4 rounded-lg ${balance >= 0 ? 'bg-blue-50' : 'bg-orange-50'}`}>
+          <p className="text-xs md:text-sm mb-1 text-black">잔액</p>
+          <p className={`text-xl md:text-2xl font-bold ${balance >= 0 ? 'text-blue-600' : 'text-orange-600'}`}>
             {formatAmount(balance)}
           </p>
         </div>
@@ -317,82 +317,153 @@ export default function TransactionList({ transactions, onDelete, onCopy }: Tran
           {transactions.length === 0 ? '거래 내역이 없습니다.' : '필터 조건에 맞는 거래가 없습니다.'}
         </p>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b">
-                <th className="text-left p-2 text-black">날짜</th>
-                <th className="text-left p-2 text-black">유형</th>
-                <th className="text-left p-2 text-black">카테고리</th>
-                <th className="text-left p-2 text-black">설명</th>
-                <th className="text-right p-2 text-black">금액</th>
-                <th className="text-center p-2 text-black">작업</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredTransactions.map((transaction) => {
-                const mainCategory = getMainCategory(transaction.type, transaction.category);
-                return (
-                  <tr key={transaction.id} className="border-b hover:bg-gray-50">
-                    <td className="p-2 text-black">{formatDate(transaction.date)}</td>
-                    <td className="p-2">
-                      <span
-                        className="px-2 py-1 rounded text-sm text-white"
-                        style={{ backgroundColor: getTypeColor(transaction.type) }}
-                      >
-                        {getTypeDisplay(transaction.type)}
-                      </span>
-                    </td>
-                    <td className="p-2 text-black">
-                      {mainCategory && mainCategory !== transaction.category ? (
-                        <span>
-                          <span className="text-gray-500">{mainCategory}</span>
-                          <span className="text-gray-400 mx-1">&gt;</span>
-                          <span>{transaction.category}</span>
+        <>
+          {/* 모바일: 카드 형태 */}
+          <div className="md:hidden space-y-3">
+            {filteredTransactions.map((transaction) => {
+              const mainCategory = getMainCategory(transaction.type, transaction.category);
+              return (
+                <div key={transaction.id} className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                  <div className="flex justify-between items-start mb-2">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span
+                          className="px-2 py-1 rounded text-xs text-white"
+                          style={{ backgroundColor: getTypeColor(transaction.type) }}
+                        >
+                          {getTypeDisplay(transaction.type)}
                         </span>
-                      ) : (
-                        transaction.category
+                        <span className="text-sm text-gray-600">{formatDate(transaction.date)}</span>
+                      </div>
+                      <div className="text-sm text-gray-700 mb-1">
+                        {mainCategory && mainCategory !== transaction.category ? (
+                          <span>
+                            <span className="text-gray-500">{mainCategory}</span>
+                            <span className="text-gray-400 mx-1">&gt;</span>
+                            <span>{transaction.category}</span>
+                          </span>
+                        ) : (
+                          transaction.category
+                        )}
+                      </div>
+                      {transaction.description && (
+                        <div className="text-sm text-gray-600 mb-2">{transaction.description}</div>
                       )}
-                    </td>
-                    <td className="p-2 text-black">{transaction.description || '-'}</td>
-                    <td
-                      className={`p-2 text-right font-semibold ${
+                    </div>
+                    <div
+                      className={`text-lg font-bold ml-2 ${
                         transaction.type === incomeTypeName || transaction.type === 'income' ? 'text-green-600' : 'text-red-600'
                       }`}
                     >
                       {transaction.type === incomeTypeName || transaction.type === 'income' ? '+' : '-'}
                       {formatAmount(Number(transaction.amount))}
-                    </td>
-                    <td className="p-2 text-center">
-                      <div className="flex gap-2 justify-center">
-                        <button
-                          onClick={() => handleEdit(transaction)}
-                          className="text-blue-600 hover:text-blue-800 text-sm"
+                    </div>
+                  </div>
+                  <div className="flex gap-2 mt-3 pt-3 border-t border-gray-200">
+                    <button
+                      onClick={() => handleEdit(transaction)}
+                      className="flex-1 py-2 px-3 bg-blue-50 text-blue-600 rounded-md hover:bg-blue-100 text-sm font-medium min-h-[44px] flex items-center justify-center"
+                    >
+                      수정
+                    </button>
+                    {onCopy && (
+                      <button
+                        onClick={() => onCopy(transaction)}
+                        className="flex-1 py-2 px-3 bg-green-50 text-green-600 rounded-md hover:bg-green-100 text-sm font-medium min-h-[44px] flex items-center justify-center"
+                      >
+                        복사
+                      </button>
+                    )}
+                    <button
+                      onClick={() => handleDelete(transaction.id)}
+                      className="flex-1 py-2 px-3 bg-red-50 text-red-600 rounded-md hover:bg-red-100 text-sm font-medium min-h-[44px] flex items-center justify-center"
+                    >
+                      삭제
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* 데스크톱: 테이블 형태 */}
+          <div className="hidden md:block overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b">
+                  <th className="text-left p-2 text-black">날짜</th>
+                  <th className="text-left p-2 text-black">유형</th>
+                  <th className="text-left p-2 text-black">카테고리</th>
+                  <th className="text-left p-2 text-black">설명</th>
+                  <th className="text-right p-2 text-black">금액</th>
+                  <th className="text-center p-2 text-black">작업</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredTransactions.map((transaction) => {
+                  const mainCategory = getMainCategory(transaction.type, transaction.category);
+                  return (
+                    <tr key={transaction.id} className="border-b hover:bg-gray-50">
+                      <td className="p-2 text-black">{formatDate(transaction.date)}</td>
+                      <td className="p-2">
+                        <span
+                          className="px-2 py-1 rounded text-sm text-white"
+                          style={{ backgroundColor: getTypeColor(transaction.type) }}
                         >
-                          수정
-                        </button>
-                        {onCopy && (
-                          <button
-                            onClick={() => onCopy(transaction)}
-                            className="text-green-600 hover:text-green-800 text-sm"
-                          >
-                            복사
-                          </button>
+                          {getTypeDisplay(transaction.type)}
+                        </span>
+                      </td>
+                      <td className="p-2 text-black">
+                        {mainCategory && mainCategory !== transaction.category ? (
+                          <span>
+                            <span className="text-gray-500">{mainCategory}</span>
+                            <span className="text-gray-400 mx-1">&gt;</span>
+                            <span>{transaction.category}</span>
+                          </span>
+                        ) : (
+                          transaction.category
                         )}
-                        <button
-                          onClick={() => handleDelete(transaction.id)}
-                          className="text-red-600 hover:text-red-800 text-sm"
-                        >
-                          삭제
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+                      </td>
+                      <td className="p-2 text-black">{transaction.description || '-'}</td>
+                      <td
+                        className={`p-2 text-right font-semibold ${
+                          transaction.type === incomeTypeName || transaction.type === 'income' ? 'text-green-600' : 'text-red-600'
+                        }`}
+                      >
+                        {transaction.type === incomeTypeName || transaction.type === 'income' ? '+' : '-'}
+                        {formatAmount(Number(transaction.amount))}
+                      </td>
+                      <td className="p-2 text-center">
+                        <div className="flex gap-2 justify-center">
+                          <button
+                            onClick={() => handleEdit(transaction)}
+                            className="text-blue-600 hover:text-blue-800 text-sm"
+                          >
+                            수정
+                          </button>
+                          {onCopy && (
+                            <button
+                              onClick={() => onCopy(transaction)}
+                              className="text-green-600 hover:text-green-800 text-sm"
+                            >
+                              복사
+                            </button>
+                          )}
+                          <button
+                            onClick={() => handleDelete(transaction.id)}
+                            className="text-red-600 hover:text-red-800 text-sm"
+                          >
+                            삭제
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </>
       )}
 
       {editingTransaction && (

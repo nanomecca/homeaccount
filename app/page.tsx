@@ -72,31 +72,33 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-gray-100 p-4 md:p-8">
       <div className="max-w-6xl mx-auto">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-800">Home 자산관리 시스템</h1>
-          <div className="flex items-center gap-4">
-            <span className="text-gray-600">안녕하세요, <strong>{username}</strong>님</span>
-            <button
-              onClick={() => setShowChangePassword(true)}
-              className="text-sm text-blue-600 hover:text-blue-800"
-            >
-              비밀번호 변경
-            </button>
-            <button
-              onClick={logout}
-              className="bg-gray-200 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-300 text-sm"
-            >
-              로그아웃
-            </button>
+        <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-4 md:mb-8 gap-3 md:gap-0">
+          <h1 className="text-2xl md:text-4xl font-bold text-gray-800">Home 자산관리 시스템</h1>
+          <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
+            <span className="text-sm md:text-base text-gray-600">안녕하세요, <strong>{username}</strong>님</span>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setShowChangePassword(true)}
+                className="text-sm md:text-sm text-blue-600 hover:text-blue-800 px-3 py-2 md:px-0 md:py-0 min-h-[44px] md:min-h-0"
+              >
+                비밀번호 변경
+              </button>
+              <button
+                onClick={logout}
+                className="bg-gray-200 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-300 text-sm min-h-[44px]"
+              >
+                로그아웃
+              </button>
+            </div>
           </div>
         </div>
         
         {/* 탭 메뉴 */}
-        <div className="mb-6 border-b border-gray-200">
-          <nav className="flex space-x-4">
+        <div className="mb-4 md:mb-6 border-b border-gray-200">
+          <nav className="flex overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0 space-x-2 md:space-x-4">
             <button
               onClick={() => setActiveTab('single')}
-              className={`py-2 px-4 border-b-2 font-medium text-sm ${
+              className={`py-3 px-4 md:py-2 border-b-2 font-medium text-sm whitespace-nowrap min-h-[44px] md:min-h-0 ${
                 activeTab === 'single'
                   ? 'border-blue-600 text-blue-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700'
@@ -116,7 +118,7 @@ export default function Home() {
             </button>
             <button
               onClick={() => setActiveTab('manage')}
-              className={`py-2 px-4 border-b-2 font-medium text-sm ${
+              className={`py-3 px-4 md:py-2 border-b-2 font-medium text-sm whitespace-nowrap min-h-[44px] md:min-h-0 ${
                 activeTab === 'manage'
                   ? 'border-blue-600 text-blue-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700'
@@ -126,7 +128,7 @@ export default function Home() {
             </button>
             <button
               onClick={() => setActiveTab('report')}
-              className={`py-2 px-4 border-b-2 font-medium text-sm ${
+              className={`py-3 px-4 md:py-2 border-b-2 font-medium text-sm whitespace-nowrap min-h-[44px] md:min-h-0 ${
                 activeTab === 'report'
                   ? 'border-blue-600 text-blue-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700'

@@ -131,8 +131,8 @@ export default function TransactionForm({ onSuccess, copiedTransaction, onCopied
   const subCategories = getSubCategories(formData.type, selectedMainCategory);
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white p-6 rounded-lg shadow-md mb-6">
-      <h2 className="text-xl font-bold mb-4 text-black">거래 추가</h2>
+    <form onSubmit={handleSubmit} className="bg-white p-4 md:p-6 rounded-lg shadow-md mb-6">
+      <h2 className="text-lg md:text-xl font-bold mb-4 text-black">거래 추가</h2>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
@@ -143,7 +143,7 @@ export default function TransactionForm({ onSuccess, copiedTransaction, onCopied
               setFormData({ ...formData, type: e.target.value, category: '' });
               setSelectedMainCategory('');
             }}
-            className="w-full p-2 border border-gray-300 rounded-md text-gray-900 bg-white"
+            className="w-full p-3 md:p-2 border border-gray-300 rounded-md text-gray-900 bg-white text-base md:text-sm min-h-[44px] md:min-h-0"
             required
           >
             <option value="" className="text-gray-500">선택하세요</option>
@@ -187,7 +187,7 @@ export default function TransactionForm({ onSuccess, copiedTransaction, onCopied
               setSelectedMainCategory(e.target.value);
               setFormData({ ...formData, category: '' });
             }}
-            className="w-full p-2 border border-gray-300 rounded-md text-gray-900 bg-white"
+            className="w-full p-3 md:p-2 border border-gray-300 rounded-md text-gray-900 bg-white text-base md:text-sm min-h-[44px] md:min-h-0"
             required
           >
             <option value="" className="text-gray-500">선택하세요</option>
@@ -204,7 +204,7 @@ export default function TransactionForm({ onSuccess, copiedTransaction, onCopied
           <select
             value={formData.category}
             onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-            className="w-full p-2 border border-gray-300 rounded-md text-gray-900 bg-white"
+            className="w-full p-3 md:p-2 border border-gray-300 rounded-md text-gray-900 bg-white text-base md:text-sm min-h-[44px] md:min-h-0"
             required
             disabled={!selectedMainCategory}
           >
@@ -225,7 +225,7 @@ export default function TransactionForm({ onSuccess, copiedTransaction, onCopied
             type="date"
             value={formData.date}
             onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-            className="w-full p-2 border border-gray-300 rounded-md text-gray-900 bg-white"
+            className="w-full p-3 md:p-2 border border-gray-300 rounded-md text-gray-900 bg-white text-base md:text-sm min-h-[44px] md:min-h-0"
             required
           />
         </div>
@@ -245,7 +245,7 @@ export default function TransactionForm({ onSuccess, copiedTransaction, onCopied
       <button
         type="submit"
         disabled={isSubmitting}
-        className="mt-4 w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+        className="mt-4 w-full bg-blue-600 text-white py-3 md:py-2 px-4 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px] text-base md:text-sm font-medium"
       >
         {isSubmitting ? '추가 중...' : '추가하기'}
       </button>
