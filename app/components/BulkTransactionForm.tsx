@@ -5,6 +5,7 @@ import { TransactionFormData } from '@/types/transaction';
 import { addTransactions, getCategories, getTransactionTypes } from '@/lib/db-client';
 import { Category } from '@/types/category';
 import { TransactionType } from '@/types/transaction-type';
+import { formatAmountInput, parseAmountInput, extractNumbers } from '@/lib/format-amount';
 
 interface BulkRow {
   id: string;
@@ -125,7 +126,7 @@ export default function BulkTransactionForm({ onSuccess }: { onSuccess: () => vo
 
       const transactions: TransactionFormData[] = validRows.map((row) => ({
         type: row.type,
-        amount: parseFloat(row.amount),
+        amount: parseAmountInput(row.amount),
         category: row.category,
         description: row.description || undefined,
         date: row.date,
@@ -254,16 +255,25 @@ export default function BulkTransactionForm({ onSuccess }: { onSuccess: () => vo
                     </select>
                   </td>
                   <td className="border p-1">
-                    <input
-                      type="number"
-                      value={row.amount}
-                      onChange={(e) => updateRow(row.id, 'amount', e.target.value)}
-                      className="w-full p-1 text-sm border border-gray-300 rounded text-gray-900 bg-white placeholder:text-gray-400"
-                      min="0"
-                      step="0.01"
-                      placeholder="0"
-                      required
-                    />
+                    <div className="relative">
+                      <input
+                        type="text"
+                        value={formatAmountInput(row.amount)}
+                        onChange={(e) => {
+                          const numbers = extractNumbers(e.target.value);
+                          updateRow(row.id, 'amount', numbers);
+                        }}
+                        onBlur={(e) => {
+                          // 포맷팅은 표시용이므로 원본 숫자 값 유지
+                          const numbers = extractNumbers(e.target.value);
+                          updateRow(row.id, 'amount', numbers);
+                        }}
+                        className="w-full p-1 text-sm border border-gray-300 rounded text-gray-900 bg-white placeholder:text-gray-400 pr-6"
+                        placeholder="0"
+                        required
+                      />
+                      <span className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 text-xs">원</span>
+                    </div>
                   </td>
                   <td className="border p-1">
                     <input

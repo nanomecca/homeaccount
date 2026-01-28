@@ -5,6 +5,7 @@ import { Transaction, TransactionFormData } from '@/types/transaction';
 import { Category } from '@/types/category';
 import { TransactionType } from '@/types/transaction-type';
 import { getCategories, updateTransaction, getTransactionTypes } from '@/lib/db-client';
+import { formatAmountInput, parseAmountInput, extractNumbers } from '@/lib/format-amount';
 
 interface TransactionEditModalProps {
   transaction: Transaction;
@@ -77,12 +78,20 @@ export default function TransactionEditModal({ transaction, onClose, onSuccess }
     setIsSubmitting(true);
 
     try {
+      // 유효성 검사
+      if (!formData.type || !formData.category || !formData.amount || formData.amount <= 0 || !formData.date) {
+        alert('모든 필수 항목을 올바르게 입력해주세요.');
+        setIsSubmitting(false);
+        return;
+      }
+
       await updateTransaction(transaction.id, formData);
       onSuccess();
       onClose();
-    } catch (error) {
+    } catch (error: any) {
       console.error('거래 수정 실패:', error);
-      alert('거래 수정에 실패했습니다.');
+      const errorMessage = error?.message || error?.error || '거래 수정에 실패했습니다.';
+      alert(`거래 수정에 실패했습니다: ${errorMessage}`);
     } finally {
       setIsSubmitting(false);
     }
@@ -160,15 +169,26 @@ export default function TransactionEditModal({ transaction, onClose, onSuccess }
 
             <div>
               <label className="block text-sm font-medium mb-2 text-gray-700">금액</label>
-              <input
-                type="number"
-                value={formData.amount || ''}
-                onChange={(e) => setFormData({ ...formData, amount: parseFloat(e.target.value) || 0 })}
-                className="w-full p-2 border border-gray-300 rounded-md text-gray-900 bg-white"
-                min="0"
-                step="0.01"
-                required
-              />
+              <div className="relative">
+                <input
+                  type="text"
+                  value={formatAmountInput(formData.amount)}
+                  onChange={(e) => {
+                    const numbers = extractNumbers(e.target.value);
+                    const parsed = parseAmountInput(numbers);
+                    setFormData({ ...formData, amount: parsed });
+                  }}
+                  onBlur={(e) => {
+                    // 포커스가 벗어날 때 포맷팅 적용
+                    const parsed = parseAmountInput(e.target.value);
+                    setFormData({ ...formData, amount: parsed });
+                  }}
+                  className="w-full p-2 border border-gray-300 rounded-md text-gray-900 bg-white pr-8"
+                  placeholder="0"
+                  required
+                />
+                <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm">원</span>
+              </div>
             </div>
 
             <div>

@@ -5,6 +5,7 @@ import { TransactionFormData } from '@/types/transaction';
 import { addTransaction, getCategories, getTransactionTypes } from '@/lib/db-client';
 import { Category } from '@/types/category';
 import { TransactionType } from '@/types/transaction-type';
+import { formatAmountInput, parseAmountInput, extractNumbers } from '@/lib/format-amount';
 
 export default function TransactionForm({ onSuccess }: { onSuccess: () => void }) {
   const [formData, setFormData] = useState<TransactionFormData>({
@@ -114,16 +115,26 @@ export default function TransactionForm({ onSuccess }: { onSuccess: () => void }
 
         <div>
           <label className="block text-sm font-medium mb-2 text-gray-700">금액</label>
-          <input
-            type="number"
-            value={formData.amount || ''}
-            onChange={(e) => setFormData({ ...formData, amount: parseFloat(e.target.value) || 0 })}
-            className="w-full p-2 border border-gray-300 rounded-md text-gray-900 bg-white"
-            min="0"
-            step="0.01"
-            placeholder="0"
-            required
-          />
+          <div className="relative">
+            <input
+              type="text"
+              value={formatAmountInput(formData.amount)}
+              onChange={(e) => {
+                const numbers = extractNumbers(e.target.value);
+                const parsed = parseAmountInput(numbers);
+                setFormData({ ...formData, amount: parsed });
+              }}
+              onBlur={(e) => {
+                // 포커스가 벗어날 때 포맷팅 적용
+                const parsed = parseAmountInput(e.target.value);
+                setFormData({ ...formData, amount: parsed });
+              }}
+              className="w-full p-2 border border-gray-300 rounded-md text-gray-900 bg-white pr-8"
+              placeholder="0"
+              required
+            />
+            <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm">원</span>
+          </div>
         </div>
 
         <div>
