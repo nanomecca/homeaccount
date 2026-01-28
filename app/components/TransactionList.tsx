@@ -20,6 +20,8 @@ export default function TransactionList({ transactions, onDelete }: TransactionL
   // 필터 상태
   const [filterType, setFilterType] = useState<string>('');
   const [filterMainCategory, setFilterMainCategory] = useState<string>('');
+  const [filterStartDate, setFilterStartDate] = useState<string>('');
+  const [filterEndDate, setFilterEndDate] = useState<string>('');
 
   useEffect(() => {
     loadData();
@@ -77,6 +79,12 @@ export default function TransactionList({ transactions, onDelete }: TransactionL
       if (mainCat !== filterMainCategory) return false;
     }
     
+    // 시작 날짜 필터
+    if (filterStartDate && t.date < filterStartDate) return false;
+    
+    // 종료 날짜 필터
+    if (filterEndDate && t.date > filterEndDate) return false;
+    
     return true;
   });
 
@@ -84,6 +92,8 @@ export default function TransactionList({ transactions, onDelete }: TransactionL
   const resetFilters = () => {
     setFilterType('');
     setFilterMainCategory('');
+    setFilterStartDate('');
+    setFilterEndDate('');
   };
 
   const handleDelete = async (id: string) => {
@@ -148,7 +158,7 @@ export default function TransactionList({ transactions, onDelete }: TransactionL
             필터 초기화
           </button>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {/* 유형 필터 */}
           <div>
             <label className="block text-sm font-medium mb-1 text-gray-700">유형</label>
@@ -184,6 +194,28 @@ export default function TransactionList({ transactions, onDelete }: TransactionL
                 </option>
               ))}
             </select>
+          </div>
+          
+          {/* 시작 날짜 */}
+          <div>
+            <label className="block text-sm font-medium mb-1 text-gray-700">시작일</label>
+            <input
+              type="date"
+              value={filterStartDate}
+              onChange={(e) => setFilterStartDate(e.target.value)}
+              className="w-full p-2 border border-gray-300 rounded-md text-gray-900 bg-white text-sm"
+            />
+          </div>
+          
+          {/* 종료 날짜 */}
+          <div>
+            <label className="block text-sm font-medium mb-1 text-gray-700">종료일</label>
+            <input
+              type="date"
+              value={filterEndDate}
+              onChange={(e) => setFilterEndDate(e.target.value)}
+              className="w-full p-2 border border-gray-300 rounded-md text-gray-900 bg-white text-sm"
+            />
           </div>
         </div>
         
