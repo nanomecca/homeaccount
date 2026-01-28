@@ -52,6 +52,8 @@ npm run dev
 
 ## 방법 2: 로컬 PostgreSQL 사용
 
+자세한 로컬 배포 가이드는 [README-LOCAL-DEPLOYMENT.md](./README-LOCAL-DEPLOYMENT.md)를 참고하세요.
+
 ### 2-1. PostgreSQL 설치
 
 로컬에 PostgreSQL이 설치되어 있어야 합니다. 설치되어 있지 않다면:
@@ -74,7 +76,10 @@ CREATE DATABASE houseaccount;
 # 데이터베이스에 접속
 \c houseaccount
 
-# 스키마 실행 (local-postgres-schema.sql 파일의 내용을 복사하여 실행)
+# 스키마 실행
+\i local-postgres-schema.sql
+
+# 사용자 테이블 생성 (supabase-users.sql 참고)
 ```
 
 또는 파일을 직접 실행:
@@ -97,7 +102,7 @@ POSTGRES_HOST=localhost
 POSTGRES_PORT=5432
 POSTGRES_DATABASE=houseaccount
 POSTGRES_USER=postgres
-POSTGRES_PASSWORD=your_password
+POSTGRES_PASSWORD=your_postgres_password
 POSTGRES_SSL=false
 ```
 
@@ -106,7 +111,19 @@ POSTGRES_SSL=false
 - `NEXT_PUBLIC_USE_LOCAL_POSTGRES=true`는 클라이언트 사이드에서 사용됩니다.
 - 두 값을 모두 설정해야 합니다.
 
-### 2-4. 개발 서버 실행
+### 2-4. 기본 사용자 설정
+
+개발 서버 실행 후 다음 API를 호출하여 기본 사용자 비밀번호를 해시화하세요:
+
+```bash
+curl -X POST http://localhost:3000/api/auth/init
+```
+
+기본 로그인 정보:
+- **아이디**: `nano`
+- **비밀번호**: `password`
+
+### 2-5. 개발 서버 실행
 
 ```bash
 npm run dev
@@ -119,11 +136,14 @@ npm run dev
 ## 주요 기능
 
 - ✅ 수입/지출 거래 추가 및 관리
-- ✅ 카테고리 관리 (추가/삭제)
+- ✅ 대분류/소분류 카테고리 관리
 - ✅ 일괄 입력 (엑셀 형태)
-- ✅ 날짜 범위 필터링
-- ✅ 거래 내역 조회 및 삭제
-- ✅ 수입/지출 통계
+- ✅ 거래 내역 필터링 (유형, 대분류, 소분류, 날짜)
+- ✅ 거래 내역 조회, 수정, 삭제
+- ✅ 월간 리포트 (유형별 분포, 지출 카테고리별 분석)
+- ✅ 카테고리 리포트 (기간별 총합, TOP 3 달)
+- ✅ 엑셀 다운로드 (한글 인코딩)
+- ✅ 사용자 인증 및 비밀번호 관리
 
 ## 배포
 
