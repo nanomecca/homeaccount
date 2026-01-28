@@ -93,9 +93,6 @@ export default function TransactionList({ transactions, onDelete }: TransactionL
 
   // 필터링된 거래 내역
   const filteredTransactions = transactions.filter(t => {
-    // 기본 날짜 필터: 오늘 기준 7일 전까지만 표시
-    if (t.date < sevenDaysAgoDate) return false;
-    
     // 유형 필터
     if (filterType && t.type !== filterType) return false;
     
@@ -108,11 +105,15 @@ export default function TransactionList({ transactions, onDelete }: TransactionL
     // 소분류 필터
     if (filterSubCategory && t.category !== filterSubCategory) return false;
     
-    // 시작 날짜 필터 (7일 전보다 이후인 경우에만 적용)
-    if (filterStartDate && t.date < filterStartDate) return false;
-    
-    // 종료 날짜 필터
-    if (filterEndDate && t.date > filterEndDate) return false;
+    // 날짜 필터: 사용자가 날짜를 설정했으면 그대로 사용, 아니면 7일 제한 적용
+    if (filterStartDate || filterEndDate) {
+      // 사용자가 날짜 필터를 설정한 경우
+      if (filterStartDate && t.date < filterStartDate) return false;
+      if (filterEndDate && t.date > filterEndDate) return false;
+    } else {
+      // 사용자가 날짜 필터를 설정하지 않은 경우: 기본 7일 제한 적용
+      if (t.date < sevenDaysAgoDate) return false;
+    }
     
     return true;
   });
