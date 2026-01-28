@@ -2,6 +2,7 @@ import { Pool } from 'pg';
 import { Transaction, TransactionFormData } from '@/types/transaction';
 import { Category, CategoryFormData } from '@/types/category';
 import { TransactionType, TransactionTypeFormData } from '@/types/transaction-type';
+import { Asset, AssetFormData } from '@/types/asset';
 
 // PostgreSQL 연결 풀 생성
 let pool: Pool | null = null;
@@ -227,6 +228,60 @@ export async function deleteTransactionType(id: string): Promise<void> {
   const client = await getPool().connect();
   try {
     await client.query('DELETE FROM transaction_types WHERE id = $1', [id]);
+  } finally {
+    client.release();
+  }
+}
+
+// Assets
+export async function getAssets(): Promise<Asset[]> {
+  const client = await getPool().connect();
+  try {
+    const result = await client.query(
+      `SELECT * FROM assets 
+       ORDER BY created_at DESC`
+    );
+    return result.rows as Asset[];
+  } finally {
+    client.release();
+  }
+}
+
+export async function addAsset(asset: AssetFormData): Promise<Asset> {
+  const client = await getPool().connect();
+  try {
+    const result = await client.query(
+      `INSERT INTO assets (type, bank_name, amount, interest_rate, maturity_date)
+       VALUES ($1, $2, $3, $4, $5)
+       RETURNING *`,
+      [asset.type, asset.bank_name, asset.amount, asset.interest_rate, asset.maturity_date]
+    );
+    return result.rows[0] as Asset;
+  } finally {
+    client.release();
+  }
+}
+
+export async function updateAsset(id: string, asset: AssetFormData): Promise<Asset> {
+  const client = await getPool().connect();
+  try {
+    const result = await client.query(
+      `UPDATE assets 
+       SET type = $1, bank_name = $2, amount = $3, interest_rate = $4, maturity_date = $5, updated_at = NOW()
+       WHERE id = $6
+       RETURNING *`,
+      [asset.type, asset.bank_name, asset.amount, asset.interest_rate, asset.maturity_date, id]
+    );
+    return result.rows[0] as Asset;
+  } finally {
+    client.release();
+  }
+}
+
+export async function deleteAsset(id: string): Promise<void> {
+  const client = await getPool().connect();
+  try {
+    await client.query('DELETE FROM assets WHERE id = $1', [id]);
   } finally {
     client.release();
   }

@@ -6,6 +6,7 @@ import BulkTransactionForm from './components/BulkTransactionForm';
 import TypeCategoryManager from './components/TypeCategoryManager';
 import TransactionList from './components/TransactionList';
 import Report from './components/Report';
+import AssetManager from './components/AssetManager';
 import LoginForm from './components/LoginForm';
 import ChangePasswordModal from './components/ChangePasswordModal';
 import { useAuth } from './contexts/AuthContext';
@@ -16,7 +17,7 @@ export default function Home() {
   const { isAuthenticated, username, logout, isLoading: authLoading } = useAuth();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'single' | 'bulk' | 'manage' | 'report'>('single');
+  const [activeTab, setActiveTab] = useState<'single' | 'bulk' | 'manage' | 'report' | 'asset'>('single');
   const [showChangePassword, setShowChangePassword] = useState(false);
 
   const loadTransactions = async () => {
@@ -141,8 +142,11 @@ export default function Home() {
         {activeTab === 'report' && (
           <Report />
         )}
+        {activeTab === 'asset' && (
+          <AssetManager />
+        )}
         
-        {activeTab !== 'report' && activeTab !== 'manage' && (
+        {activeTab !== 'report' && activeTab !== 'manage' && activeTab !== 'asset' && (
           <>
             {isLoading ? (
               <div className="bg-white rounded-lg shadow-md p-8 text-center">

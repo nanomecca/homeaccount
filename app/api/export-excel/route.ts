@@ -19,6 +19,7 @@ export async function POST(request: NextRequest) {
       category: string;
       amount: number;
       description?: string;
+      main_category?: string;
     }) => {
       const date = new Date(t.date);
       const year = date.getFullYear();
@@ -28,7 +29,8 @@ export async function POST(request: NextRequest) {
       return {
         '날짜': `${year}-${month}-${day}`,
         '유형': t.type,
-        '카테고리': t.category,
+        '대분류': t.main_category || '',
+        '소분류': t.category,
         '금액': Number(t.amount),
         '설명': t.description || '',
       };
@@ -41,7 +43,8 @@ export async function POST(request: NextRequest) {
     const colWidths = [
       { wch: 12 }, // 날짜
       { wch: 10 }, // 유형
-      { wch: 15 }, // 카테고리
+      { wch: 12 }, // 대분류
+      { wch: 15 }, // 소분류
       { wch: 15 }, // 금액
       { wch: 30 }, // 설명
     ];

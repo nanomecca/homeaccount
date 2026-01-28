@@ -325,11 +325,15 @@ export default function Report() {
     try {
       const fileName = `${selectedYear}년_${selectedMonth}월_거래내역.xlsx`;
       
-      // 유형 표시 이름 변환
-      const dataWithDisplayNames = monthlyTransactions.map((t) => ({
-        ...t,
-        type: getTypeDisplayName(t.type),
-      }));
+      // 유형 표시 이름 변환 및 대분류 정보 추가
+      const dataWithDisplayNames = monthlyTransactions.map((t) => {
+        const categoryInfo = categories.find(c => c.type === t.type && c.name === t.category);
+        return {
+          ...t,
+          type: getTypeDisplayName(t.type),
+          main_category: categoryInfo?.main_category || '',
+        };
+      });
 
       const response = await fetch('/api/export-excel', {
         method: 'POST',

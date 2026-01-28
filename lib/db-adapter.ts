@@ -2,6 +2,7 @@
 import { Transaction, TransactionFormData } from '@/types/transaction';
 import { Category, CategoryFormData } from '@/types/category';
 import { TransactionType, TransactionTypeFormData } from '@/types/transaction-type';
+import { Asset, AssetFormData } from '@/types/asset';
 
 // Supabase 함수들
 import * as supabaseDb from './db';
@@ -102,4 +103,33 @@ export async function deleteTransactionType(id: string): Promise<void> {
     return postgresDb.deleteTransactionType(id);
   }
   return supabaseDb.deleteTransactionType(id);
+}
+
+// Assets
+export async function getAssets(): Promise<Asset[]> {
+  if (USE_LOCAL_POSTGRES) {
+    return postgresDb.getAssets();
+  }
+  return supabaseDb.getAssets();
+}
+
+export async function addAsset(asset: AssetFormData): Promise<Asset> {
+  if (USE_LOCAL_POSTGRES) {
+    return postgresDb.addAsset(asset);
+  }
+  return supabaseDb.addAsset(asset);
+}
+
+export async function updateAsset(id: string, asset: AssetFormData): Promise<Asset> {
+  if (USE_LOCAL_POSTGRES) {
+    return postgresDb.updateAsset(id, asset);
+  }
+  return supabaseDb.updateAsset(id, asset);
+}
+
+export async function deleteAsset(id: string): Promise<void> {
+  if (USE_LOCAL_POSTGRES) {
+    return postgresDb.deleteAsset(id);
+  }
+  return supabaseDb.deleteAsset(id);
 }
