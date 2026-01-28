@@ -2,7 +2,6 @@ import { supabase } from './supabase';
 import { Transaction, TransactionFormData } from '@/types/transaction';
 import { Category, CategoryFormData } from '@/types/category';
 import { TransactionType, TransactionTypeFormData } from '@/types/transaction-type';
-import { Asset, AssetFormData } from '@/types/asset';
 
 export async function getTransactions() {
   const { data, error } = await supabase
@@ -305,57 +304,3 @@ export async function hashPassword(password: string): Promise<string> {
   return bcrypt.hash(password, 10);
 }
 
-// Assets
-export async function getAssets(): Promise<Asset[]> {
-  const { data, error } = await supabase
-    .from('assets')
-    .select('*')
-    .order('created_at', { ascending: false });
-
-  if (error) throw error;
-  return data as Asset[];
-}
-
-export async function addAsset(asset: AssetFormData): Promise<Asset> {
-  const { data, error } = await supabase
-    .from('assets')
-    .insert([asset])
-    .select()
-    .single();
-
-  if (error) throw error;
-  return data as Asset;
-}
-
-export async function updateAsset(id: string, asset: AssetFormData): Promise<Asset> {
-  const { data, error } = await supabase
-    .from('assets')
-    .update({ ...asset, updated_at: new Date().toISOString() })
-    .eq('id', id)
-    .select()
-    .single();
-
-  if (error) throw error;
-  return data as Asset;
-}
-
-export async function deleteAsset(id: string): Promise<void> {
-  const { error } = await supabase
-    .from('assets')
-    .delete()
-    .eq('id', id);
-
-  if (error) throw error;
-}
-
-export async function updateAssetStatus(id: string, status: 'active' | 'matured' | 'closed'): Promise<Asset> {
-  const { data, error } = await supabase
-    .from('assets')
-    .update({ status, updated_at: new Date().toISOString() })
-    .eq('id', id)
-    .select()
-    .single();
-
-  if (error) throw error;
-  return data as Asset;
-}

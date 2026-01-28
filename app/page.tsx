@@ -6,7 +6,6 @@ import BulkTransactionForm from './components/BulkTransactionForm';
 import TypeCategoryManager from './components/TypeCategoryManager';
 import TransactionList from './components/TransactionList';
 import Report from './components/Report';
-import AssetManager from './components/AssetManager';
 import LoginForm from './components/LoginForm';
 import ChangePasswordModal from './components/ChangePasswordModal';
 import { useAuth } from './contexts/AuthContext';
@@ -17,7 +16,7 @@ export default function Home() {
   const { isAuthenticated, username, logout, isLoading: authLoading } = useAuth();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'single' | 'bulk' | 'manage' | 'report' | 'asset'>('single');
+  const [activeTab, setActiveTab] = useState<'single' | 'bulk' | 'manage' | 'report'>('single');
   const [showChangePassword, setShowChangePassword] = useState(false);
 
   const loadTransactions = async () => {
@@ -124,16 +123,6 @@ export default function Home() {
             >
               리포트
             </button>
-            <button
-              onClick={() => setActiveTab('asset')}
-              className={`py-2 px-4 border-b-2 font-medium text-sm ${
-                activeTab === 'asset'
-                  ? 'border-blue-600 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              자산관리
-            </button>
           </nav>
         </div>
 
@@ -152,11 +141,7 @@ export default function Home() {
         {activeTab === 'report' && (
           <Report />
         )}
-        {activeTab === 'asset' && (
-          <AssetManager />
-        )}
-        
-        {activeTab !== 'report' && activeTab !== 'manage' && activeTab !== 'asset' && (
+        {activeTab !== 'report' && activeTab !== 'manage' && (
           <>
             {isLoading ? (
               <div className="bg-white rounded-lg shadow-md p-8 text-center">
