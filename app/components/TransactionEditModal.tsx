@@ -20,13 +20,27 @@ export default function TransactionEditModal({ transaction, onClose, onSuccess }
     description: transaction.description || '',
     date: transaction.date,
   });
+  const [selectedMainCategory, setSelectedMainCategory] = useState('');
   const [categories, setCategories] = useState<Category[]>([]);
   const [types, setTypes] = useState<TransactionType[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    // 카테고리가 로드된 후 기존 거래의 대분류 찾기
+    if (categories.length > 0 && !selectedMainCategory) {
+      const currentCategory = categories.find(
+        cat => cat.type === transaction.type && cat.name === transaction.category
+      );
+      if (currentCategory) {
+        setSelectedMainCategory(currentCategory.main_category);
+      }
+    }
+  }, [categories, transaction.type, transaction.category, selectedMainCategory]);
 
   const loadData = async () => {
     try {
@@ -39,6 +53,23 @@ export default function TransactionEditModal({ transaction, onClose, onSuccess }
     } catch (error) {
       console.error('데이터 로드 실패:', error);
     }
+  };
+
+  // 현재 유형의 대분류 목록 가져오기
+  const getMainCategories = (type: string) => {
+    const mainCats = [...new Set(
+      categories
+        .filter(cat => cat.type === type)
+        .map(cat => cat.main_category)
+    )];
+    return mainCats.sort();
+  };
+
+  // 선택된 대분류의 소분류 목록 가져오기
+  const getSubCategories = (type: string, mainCategory: string) => {
+    return categories.filter(
+      cat => cat.type === type && cat.main_category === mainCategory
+    );
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -57,7 +88,8 @@ export default function TransactionEditModal({ transaction, onClose, onSuccess }
     }
   };
 
-  const currentCategories = categories.filter((cat) => cat.type === formData.type);
+  const mainCategories = getMainCategories(formData.type);
+  const subCategories = getSubCategories(formData.type, selectedMainCategory);
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -72,6 +104,7 @@ export default function TransactionEditModal({ transaction, onClose, onSuccess }
                 value={formData.type}
                 onChange={(e) => {
                   setFormData({ ...formData, type: e.target.value, category: '' });
+                  setSelectedMainCategory('');
                 }}
                 className="w-full p-2 border border-gray-300 rounded-md text-gray-900 bg-white"
                 required
@@ -86,15 +119,38 @@ export default function TransactionEditModal({ transaction, onClose, onSuccess }
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-2 text-gray-700">카테고리</label>
+              <label className="block text-sm font-medium mb-2 text-gray-700">대분류</label>
+              <select
+                value={selectedMainCategory}
+                onChange={(e) => {
+                  setSelectedMainCategory(e.target.value);
+                  setFormData({ ...formData, category: '' });
+                }}
+                className="w-full p-2 border border-gray-300 rounded-md text-gray-900 bg-white"
+                required
+              >
+                <option value="" className="text-gray-500">선택하세요</option>
+                {mainCategories.map((mainCat) => (
+                  <option key={mainCat} value={mainCat} className="text-gray-900">
+                    {mainCat}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-2 text-gray-700">소분류</label>
               <select
                 value={formData.category}
                 onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                 className="w-full p-2 border border-gray-300 rounded-md text-gray-900 bg-white"
                 required
+                disabled={!selectedMainCategory}
               >
-                <option value="" className="text-gray-500">선택하세요</option>
-                {currentCategories.map((cat) => (
+                <option value="" className="text-gray-500">
+                  {selectedMainCategory ? '선택하세요' : '대분류를 먼저 선택하세요'}
+                </option>
+                {subCategories.map((cat) => (
                   <option key={cat.id} value={cat.name} className="text-gray-900">
                     {cat.name}
                   </option>
