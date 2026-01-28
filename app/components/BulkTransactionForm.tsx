@@ -75,10 +75,21 @@ export default function BulkTransactionForm({ onSuccess }: { onSuccess: () => vo
   };
 
   const updateRow = (id: string, field: keyof BulkRow, value: string) => {
-    setRows(
-      rows.map((row) => {
+    setRows((prevRows) =>
+      prevRows.map((row) => {
         if (row.id === id) {
           return { ...row, [field]: value };
+        }
+        return row;
+      })
+    );
+  };
+
+  const updateRowMultiple = (id: string, updates: Partial<BulkRow>) => {
+    setRows((prevRows) =>
+      prevRows.map((row) => {
+        if (row.id === id) {
+          return { ...row, ...updates };
         }
         return row;
       })
@@ -171,8 +182,7 @@ export default function BulkTransactionForm({ onSuccess }: { onSuccess: () => vo
                     <select
                       value={row.type}
                       onChange={(e) => {
-                        updateRow(row.id, 'type', e.target.value);
-                        updateRow(row.id, 'category', '');
+                        updateRowMultiple(row.id, { type: e.target.value, category: '' });
                       }}
                       className="w-full p-1 text-sm border border-gray-300 rounded text-gray-900 bg-white"
                       required

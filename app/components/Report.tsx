@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Legend, Tooltip, Cell } from 'recharts';
 import { Transaction } from '@/types/transaction';
 import { Category } from '@/types/category';
 import { TransactionType } from '@/types/transaction-type';
@@ -348,24 +348,37 @@ export default function Report() {
                 </div>
               </div>
 
-              {/* 원형 그래프 */}
+              {/* 막대 그래프 */}
               {monthlyData.pieData.length > 0 ? (
                 <div className="mb-6">
-                  <h3 className="text-lg font-semibold mb-4 text-black">지출 카테고리별 분포</h3>
+                  <h3 className="text-lg font-semibold mb-4 text-black">카테고리별 분포</h3>
                   <div className="flex justify-center">
                     <ResponsiveContainer width="100%" height={400}>
-                      <PieChart>
-                        <Pie
-                          data={monthlyData.pieData}
-                          cx="50%"
-                          cy="50%"
-                          labelLine={false}
-                          label={({ name, percent }) =>
-                            `${name} ${(percent * 100).toFixed(0)}%`
-                          }
-                          outerRadius={120}
-                          fill="#8884d8"
-                          dataKey="value"
+                      <BarChart
+                        data={monthlyData.pieData}
+                        layout="vertical"
+                        margin={{ top: 20, right: 30, left: 100, bottom: 5 }}
+                      >
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis 
+                          type="number" 
+                          tickFormatter={(value) => formatAmount(value).replace('₩', '')}
+                        />
+                        <YAxis 
+                          type="category" 
+                          dataKey="name" 
+                          width={90}
+                          tick={{ fill: '#000' }}
+                        />
+                        <Tooltip
+                          formatter={(value: number) => formatAmount(value)}
+                          labelStyle={{ color: '#000' }}
+                        />
+                        <Legend />
+                        <Bar 
+                          dataKey="value" 
+                          name="금액"
+                          radius={[0, 4, 4, 0]}
                         >
                           {monthlyData.pieData.map((entry, index) => (
                             <Cell
@@ -373,18 +386,14 @@ export default function Report() {
                               fill={COLORS[index % COLORS.length]}
                             />
                           ))}
-                        </Pie>
-                        <Tooltip
-                          formatter={(value: number) => formatAmount(value)}
-                        />
-                        <Legend />
-                      </PieChart>
+                        </Bar>
+                      </BarChart>
                     </ResponsiveContainer>
                   </div>
                 </div>
               ) : (
                 <p className="text-center py-8 text-black">
-                  {selectedYear}년 {selectedMonth}월에 지출 내역이 없습니다.
+                  {selectedYear}년 {selectedMonth}월에 거래 내역이 없습니다.
                 </p>
               )}
             </>
