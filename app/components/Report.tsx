@@ -76,10 +76,6 @@ export default function Report() {
       acc[t.type] += Number(t.amount);
       return acc;
     }, {} as Record<string, number>);
-
-    // 첫 번째 유형을 기본으로 사용 (기존 호환성)
-    const firstType = Object.keys(byType)[0] || '';
-    const secondType = Object.keys(byType)[1] || '';
     
     const totalIncome = byType['income'] || 0;
     const totalExpense = byType['expense'] || 0;
@@ -87,26 +83,16 @@ export default function Report() {
       .filter(([type]) => type !== 'income' && type !== 'expense')
       .reduce((sum, [, amount]) => sum + amount, 0);
 
-    // 첫 번째 유형의 카테고리별 데이터 (원형 그래프용)
-    const firstTypeByCategory = monthlyTransactions
-      .filter((t) => t.type === firstType)
-      .reduce((acc, t) => {
-        const category = t.category;
-        if (!acc[category]) {
-          acc[category] = 0;
-        }
-        acc[category] += Number(t.amount);
-        return acc;
-      }, {} as Record<string, number>);
-
-    const totalCategoryAmount = Object.values(firstTypeByCategory).reduce((sum, val) => sum + val, 0);
-    
-    const pieData = Object.entries(firstTypeByCategory)
-      .map(([name, value]) => ({ 
-        name, 
-        value,
-        percent: totalCategoryAmount > 0 ? Math.round((value / totalCategoryAmount) * 100) : 0
-      }))
+    // 모든 유형별 데이터 (세로 막대 그래프용)
+    const barData = Object.entries(byType)
+      .map(([type, value]) => {
+        const typeInfo = types.find(t => t.name === type);
+        return {
+          name: typeInfo ? typeInfo.display_name : type,
+          value,
+          type: type,
+        };
+      })
       .sort((a, b) => b.value - a.value);
 
     return {
@@ -115,7 +101,7 @@ export default function Report() {
       totalExpense,
       totalOther,
       balance: totalIncome - totalExpense - totalOther,
-      pieData,
+      barData,
       byType,
     };
   };
@@ -387,26 +373,23 @@ export default function Report() {
                 </div>
               </div>
 
-              {/* 막대 그래프 */}
-              {monthlyData.pieData.length > 0 ? (
+              {/* 세로 막대 그래프 */}
+              {monthlyData.barData.length > 0 ? (
                 <div className="mb-6">
-                  <h3 className="text-lg font-semibold mb-4 text-black">카테고리별 분포</h3>
+                  <h3 className="text-lg font-semibold mb-4 text-black">유형별 분포</h3>
                   <div className="flex justify-center">
                     <ResponsiveContainer width="100%" height={400}>
                       <BarChart
-                        data={monthlyData.pieData}
-                        layout="vertical"
-                        margin={{ top: 20, right: 30, left: 100, bottom: 5 }}
+                        data={monthlyData.barData}
+                        margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
                       >
                         <CartesianGrid strokeDasharray="3 3" />
                         <XAxis 
-                          type="number" 
-                          tickFormatter={(value) => formatAmount(value).replace('₩', '')}
+                          dataKey="name"
+                          tick={{ fill: '#000' }}
                         />
                         <YAxis 
-                          type="category" 
-                          dataKey="name" 
-                          width={90}
+                          tickFormatter={(value) => formatAmount(value).replace('₩', '')}
                           tick={{ fill: '#000' }}
                         />
                         <Tooltip
@@ -417,19 +400,23 @@ export default function Report() {
                         <Bar 
                           dataKey="value" 
                           name="금액"
-                          radius={[0, 4, 4, 0]}
+                          radius={[4, 4, 0, 0]}
                         >
-                          {monthlyData.pieData.map((entry, index) => (
-                            <Cell
-                              key={`cell-${index}`}
-                              fill={COLORS[index % COLORS.length]}
-                            />
-                          ))}
+                          {monthlyData.barData.map((entry, index) => {
+                            const typeInfo = types.find(t => t.name === entry.type);
+                            const color = typeInfo?.color || COLORS[index % COLORS.length];
+                            return (
+                              <Cell
+                                key={`cell-${index}`}
+                                fill={color}
+                              />
+                            );
+                          })}
                           <LabelList 
-                            dataKey="percent" 
-                            position="right" 
-                            formatter={(value: number) => `${value}%`}
-                            style={{ fill: '#000', fontWeight: 'bold' }}
+                            dataKey="value" 
+                            position="top" 
+                            formatter={(value: number) => formatAmount(value)}
+                            style={{ fill: '#000', fontWeight: 'bold', fontSize: '12px' }}
                           />
                         </Bar>
                       </BarChart>
