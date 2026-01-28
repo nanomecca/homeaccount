@@ -150,13 +150,40 @@ export default function AssetManager() {
 
   // 이자 계산 함수
   const calculateInterest = (asset: Asset) => {
+    const status = asset.status || 'active';
+    
+    // 만기나 해제된 자산은 이자 계산 안 함
+    if (status !== 'active') {
+      return { beforeTax: 0, afterTax: 0, daysRemaining: 0 };
+    }
+
     const today = new Date();
+    today.setHours(0, 0, 0, 0);
     const maturityDate = new Date(asset.maturity_date);
-    const daysDiff = Math.max(0, Math.floor((maturityDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)));
+    maturityDate.setHours(0, 0, 0, 0);
+    
+    const daysDiff = Math.floor((maturityDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
     const years = daysDiff / 365;
 
-    if (years <= 0) {
-      return { beforeTax: 0, afterTax: 0, daysRemaining: 0 };
+    // 만기일이 지났거나 오늘인 경우 전체 기간 계산 (가입일부터 만기일까지)
+    if (daysDiff <= 0) {
+      // 만기일까지의 전체 기간 계산 (가입일부터 만기일까지)
+      const createdDate = asset.created_at ? new Date(asset.created_at) : today;
+      createdDate.setHours(0, 0, 0, 0);
+      const totalDays = Math.floor((maturityDate.getTime() - createdDate.getTime()) / (1000 * 60 * 60 * 24));
+      const totalYears = Math.max(1, totalDays) / 365; // 최소 1일
+      
+      const principal = Number(asset.amount);
+      const rate = Number(asset.interest_rate) / 100;
+      const interestBeforeTax = principal * rate * totalYears;
+      const taxRate = 0.154; // 15.4%
+      const interestAfterTax = interestBeforeTax * (1 - taxRate);
+
+      return {
+        beforeTax: interestBeforeTax,
+        afterTax: interestAfterTax,
+        daysRemaining: 0,
+      };
     }
 
     const principal = Number(asset.amount);
@@ -167,8 +194,7 @@ export default function AssetManager() {
     
     // 세율 계산 (한국 기준)
     // 연간 이자소득 2,000만원 이하: 15.4% (소득세 14% + 지방소득세 1.4%)
-    // 연간 이자소득 2,000만원 초과: 종합과세 (복잡하므로 일단 15.4% 적용)
-    const taxRate = interestBeforeTax > 20000000 ? 0.154 : 0.154; // 기본 15.4%
+    const taxRate = 0.154; // 기본 15.4%
     const interestAfterTax = interestBeforeTax * (1 - taxRate);
 
     return {

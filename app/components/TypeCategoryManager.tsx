@@ -199,6 +199,30 @@ export default function TypeCategoryManager({ onChange }: { onChange: () => void
     }
   };
 
+  const handleMainCategoryDelete = async (mainCategory: string) => {
+    if (!confirm(`"${mainCategory}" 대분류와 모든 소분류를 삭제하시겠습니까?`)) return;
+
+    try {
+      // 해당 대분류의 모든 소분류 삭제
+      const categoriesToDelete = categories.filter(
+        cat => cat.type === selectedType && cat.main_category === mainCategory
+      );
+      
+      for (const category of categoriesToDelete) {
+        await deleteCategory(category.id);
+      }
+      
+      await loadData();
+      if (selectedMainCategory === mainCategory) {
+        setSelectedMainCategory('');
+      }
+      onChange();
+    } catch (error) {
+      console.error('대분류 삭제 실패:', error);
+      alert('대분류 삭제에 실패했습니다.');
+    }
+  };
+
   const mainCategories = getMainCategories();
   const subCategories = getSubCategories();
 
@@ -376,18 +400,30 @@ export default function TypeCategoryManager({ onChange }: { onChange: () => void
 
               <div className="flex flex-wrap gap-2">
                 {mainCategories.map((mainCat) => (
-                  <button
+                  <div
                     key={mainCat}
-                    type="button"
-                    onClick={() => setSelectedMainCategory(mainCat)}
-                    className={`px-3 py-1 rounded-full text-sm transition-colors ${
-                      selectedMainCategory === mainCat
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-100'
-                    }`}
+                    className="flex items-center gap-1"
                   >
-                    {mainCat}
-                  </button>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedMainCategory(mainCat)}
+                      className={`px-3 py-1 rounded-full text-sm transition-colors ${
+                        selectedMainCategory === mainCat
+                          ? 'bg-blue-600 text-white'
+                          : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-100'
+                      }`}
+                    >
+                      {mainCat}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleMainCategoryDelete(mainCat)}
+                      className="text-red-600 hover:text-red-800 text-sm px-1"
+                      title="대분류 삭제"
+                    >
+                      ×
+                    </button>
+                  </div>
                 ))}
                 {mainCategories.length === 0 && (
                   <p className="text-gray-500 text-sm">대분류가 없습니다.</p>
