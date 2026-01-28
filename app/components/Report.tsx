@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Legend, Tooltip, Cell } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Legend, Tooltip, Cell, LabelList } from 'recharts';
 import { Transaction } from '@/types/transaction';
 import { Category } from '@/types/category';
 import { TransactionType } from '@/types/transaction-type';
@@ -18,6 +18,9 @@ export default function Report() {
   const [types, setTypes] = useState<TransactionType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [reportType, setReportType] = useState<'monthly' | 'category'>('monthly');
+  const [categoryYear, setCategoryYear] = useState(new Date().getFullYear());
+  const [categoryMonth, setCategoryMonth] = useState(new Date().getMonth() + 1);
+  const [categoryDateMode, setCategoryDateMode] = useState<'month' | 'range'>('month');
 
   useEffect(() => {
     loadData();
@@ -96,8 +99,14 @@ export default function Report() {
         return acc;
       }, {} as Record<string, number>);
 
+    const totalCategoryAmount = Object.values(firstTypeByCategory).reduce((sum, val) => sum + val, 0);
+    
     const pieData = Object.entries(firstTypeByCategory)
-      .map(([name, value]) => ({ name, value }))
+      .map(([name, value]) => ({ 
+        name, 
+        value,
+        percent: totalCategoryAmount > 0 ? Math.round((value / totalCategoryAmount) * 100) : 0
+      }))
       .sort((a, b) => b.value - a.value);
 
     return {
@@ -113,7 +122,36 @@ export default function Report() {
 
   // 카테고리별 리포트 데이터
   const getCategoryReportData = () => {
-    if (!selectedCategory || !startDate || !endDate) {
+    if (!selectedCategory) {
+      return null;
+    }
+
+    // 월 선택 모드 또는 날짜 범위 모드에 따라 필터링
+    if (categoryDateMode === 'month') {
+      const categoryTransactions = transactions.filter((t) => {
+        const transactionDate = new Date(t.date);
+        return (
+          t.category === selectedCategory &&
+          transactionDate.getFullYear() === categoryYear &&
+          transactionDate.getMonth() + 1 === categoryMonth
+        );
+      });
+
+      const totalAmount = categoryTransactions.reduce(
+        (sum, t) => sum + Number(t.amount),
+        0
+      );
+
+      return {
+        totalAmount,
+        top3Months: [],
+        transactionCount: categoryTransactions.length,
+        isMonthMode: true,
+      };
+    }
+
+    // 날짜 범위 모드
+    if (!startDate || !endDate) {
       return null;
     }
 
@@ -156,6 +194,7 @@ export default function Report() {
       totalAmount,
       top3Months,
       transactionCount: categoryTransactions.length,
+      isMonthMode: false,
     };
   };
 
@@ -386,6 +425,12 @@ export default function Report() {
                               fill={COLORS[index % COLORS.length]}
                             />
                           ))}
+                          <LabelList 
+                            dataKey="percent" 
+                            position="right" 
+                            formatter={(value: number) => `${value}%`}
+                            style={{ fill: '#000', fontWeight: 'bold' }}
+                          />
                         </Bar>
                       </BarChart>
                     </ResponsiveContainer>
@@ -421,33 +466,99 @@ export default function Report() {
               </select>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium mb-2 text-gray-700">시작 날짜</label>
-                <input
-                  type="date"
-                  value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded-md text-gray-900 bg-white"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-2 text-gray-700">종료 날짜</label>
-                <input
-                  type="date"
-                  value={endDate}
-                  onChange={(e) => setEndDate(e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded-md text-gray-900 bg-white"
-                />
+            {/* 기간 선택 모드 */}
+            <div>
+              <label className="block text-sm font-medium mb-2 text-gray-700">기간 선택 방식</label>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setCategoryDateMode('month')}
+                  className={`px-4 py-2 rounded-md text-sm ${
+                    categoryDateMode === 'month'
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                  }`}
+                >
+                  월 선택
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCategoryDateMode('range')}
+                  className={`px-4 py-2 rounded-md text-sm ${
+                    categoryDateMode === 'range'
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                  }`}
+                >
+                  기간 선택
+                </button>
               </div>
             </div>
+
+            {categoryDateMode === 'month' ? (
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2 text-gray-700">년도</label>
+                  <select
+                    value={categoryYear}
+                    onChange={(e) => setCategoryYear(parseInt(e.target.value))}
+                    className="w-full p-2 border border-gray-300 rounded-md text-gray-900 bg-white"
+                  >
+                    {years.map((year) => (
+                      <option key={year} value={year} className="text-gray-900">
+                        {year}년
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2 text-gray-700">월</label>
+                  <select
+                    value={categoryMonth}
+                    onChange={(e) => setCategoryMonth(parseInt(e.target.value))}
+                    className="w-full p-2 border border-gray-300 rounded-md text-gray-900 bg-white"
+                  >
+                    {months.map((month) => (
+                      <option key={month} value={month} className="text-gray-900">
+                        {month}월
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2 text-gray-700">시작 날짜</label>
+                  <input
+                    type="date"
+                    value={startDate}
+                    onChange={(e) => setStartDate(e.target.value)}
+                    className="w-full p-2 border border-gray-300 rounded-md text-gray-900 bg-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2 text-gray-700">종료 날짜</label>
+                  <input
+                    type="date"
+                    value={endDate}
+                    onChange={(e) => setEndDate(e.target.value)}
+                    className="w-full p-2 border border-gray-300 rounded-md text-gray-900 bg-white"
+                  />
+                </div>
+              </div>
+            )}
           </div>
 
           {categoryReportData ? (
             <div className="space-y-6">
               {/* 총합 */}
               <div className="bg-blue-50 p-6 rounded-lg">
-                <h3 className="text-lg font-semibold mb-2 text-black">기간별 총합</h3>
+                <h3 className="text-lg font-semibold mb-2 text-black">
+                  {categoryReportData.isMonthMode 
+                    ? `${categoryYear}년 ${categoryMonth}월 총합` 
+                    : '기간별 총합'}
+                </h3>
                 <p className="text-3xl font-bold text-blue-600">
                   {formatAmount(categoryReportData.totalAmount)}
                 </p>
@@ -456,8 +567,8 @@ export default function Report() {
                 </p>
               </div>
 
-              {/* TOP 3 달 */}
-              {categoryReportData.top3Months.length > 0 ? (
+              {/* TOP 3 달 (기간 선택 모드일 때만 표시) */}
+              {!categoryReportData.isMonthMode && categoryReportData.top3Months.length > 0 && (
                 <div>
                   <h3 className="text-lg font-semibold mb-4 text-black">TOP 3 많이 사용한 달</h3>
                   <div className="space-y-3">
@@ -479,17 +590,21 @@ export default function Report() {
                     ))}
                   </div>
                 </div>
-              ) : (
-              <p className="text-center py-8 text-black">
-                선택한 기간에 해당 카테고리의 거래 내역이 없습니다.
-              </p>
-            )}
-          </div>
-        ) : (
-          <p className="text-center py-8 text-black">
-            카테고리와 기간을 선택해주세요.
-          </p>
-        )}
+              )}
+
+              {categoryReportData.transactionCount === 0 && (
+                <p className="text-center py-8 text-black">
+                  선택한 기간에 해당 카테고리의 거래 내역이 없습니다.
+                </p>
+              )}
+            </div>
+          ) : (
+            <p className="text-center py-8 text-black">
+              {categoryDateMode === 'month' 
+                ? '카테고리를 선택해주세요.'
+                : '카테고리와 기간을 선택해주세요.'}
+            </p>
+          )}
         </div>
       )}
     </div>
